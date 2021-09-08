@@ -12,6 +12,7 @@ import numpy as np
 import time
 
 
+
 '''
 #Functions to gather stock information
 '''
