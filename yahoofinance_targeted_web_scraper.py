@@ -40,16 +40,19 @@ def price_scraper(web_content):
     price, change = [], []
   return price, change
 
-'''def table_of_info_scraper(web_content):
-  print('entered function')
+def volume_scraper(web_content):
   left_texts = web_content_div(web_content, 'D(ib) W(1/2) Bxz(bb) Pend(12px) Va(t) ie-7_D(i) smartphone_D(b) smartphone_W(100%) smartphone_Pend(0px) smartphone_BdY smartphone_Bdc($seperatorColor)')#Class path of the table of information
-  right_texts = web_content_div(web_content, 'D(ib) W(1/2) Bxz(bb) Pstart(12px) Va(t) ie-7_D(i) ie-7_Pos(a) smartphone_D(b) smartphone_W(100%) smartphone_Pstart(0px) smartphone_BdB smartphone_Bdc($seperatorColor)')#Class path of the table of information
-  texts = left_texts + right_texts
-  if texts != []:
-    print('entered if statement')
-    for count, elem in enumerate(texts):
-      if elem == 'Earnings Date':
-        print(texts[count+1])'''
+  #right_texts = web_content_div(web_content, 'D(ib) W(1/2) Bxz(bb) Pstart(12px) Va(t) ie-7_D(i) ie-7_Pos(a) smartphone_D(b) smartphone_W(100%) smartphone_Pstart(0px) smartphone_BdB smartphone_Bdc($seperatorColor)')#Class path of the table of information
+  #texts = left_texts + right_texts
+  no_volume: bool = True
+  if left_texts != []:
+    for count, elem in enumerate(left_texts):
+      if elem == 'Volume':#looks through the generated list for the volume key word
+        no_volume = False
+        return left_texts[count+1]#if volume key word is found then the associated value is returned
+
+  if no_volume == True:#if volume key word is not found then a null value is returned
+    return []
       
 
 def real_time_price(stock_code):
@@ -59,17 +62,19 @@ def real_time_price(stock_code):
     web_content = BeautifulSoup(page.text, 'html.parser')#soup
     
     price, change = price_scraper(web_content)
-    #table_of_info_scraper(web_content)
+    volume = volume_scraper(web_content)
+    del page
+    del web_content
 
   except ConnectionError as e:
     print(e)
-    price, change = [], []
+    price, change, volume = [], [], []
 
-  return price, change
+  return price, change, volume
 
 
 def scraping(stock_list, interupt_time, interval_time):#interupt and interval time are passed as seconds
-  df = pd.DataFrame(columns=['Date','Code','Price','Change', '% Change'])
+  df = pd.DataFrame(columns=['Date','Code','Price','Change', '% Change', 'Volume'])
 
   start_time = time.time()
   current_time = time.time()
@@ -80,25 +85,23 @@ def scraping(stock_list, interupt_time, interval_time):#interupt and interval ti
       time_stamp = time_stamp.strftime('%y-%m-%d %H:%M:%S')#format the time
       information: list = [time_stamp] 
 
-      price, change = real_time_price(stock_code)
+      price, change, volume = real_time_price(stock_code)
 
       actual_change, percentage_change = str(change).split()
       percentage_change = percentage_change.replace('(', '')
       percentage_change = percentage_change.replace(')', '')
       #percentage_change = percentage_change.replace('%', '')
 
-      information.extend([stock_code, price, actual_change, percentage_change])
-      df.loc[len(df)] = information#adds the information to the datatframe
+      information.extend([stock_code, price, actual_change, percentage_change, volume])
+      df.loc[len(df)] = information#adds the information list to the datatframe
       time.sleep(interval_time)
       current_time = time.time()
   
-  df.to_csv('StockData.csv',index=False)
-  
-
+  df.to_csv('StockData.csv',index=False)#saves all vales at once at the end of scraping
 
 '''
 #Running Stock Scraper
 '''
 
-Stock: list = ['NFLX', 'FB']
-scraping(Stock, 30, 5)
+Stock: list = ['NFLX']
+scraping(Stock, 600, 60)
