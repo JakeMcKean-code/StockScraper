@@ -10,13 +10,10 @@ def get_data(code, company_name: list, company_ticker, company_stock, change, pe
     page = requests.get(url)
     page_text: str = page.text
     soup = BeautifulSoup(page.text, 'html.parser')
-    odd_rows: list = soup.find_all('tr', attrs={'class':'ts0'})
-    even_rows: list = soup.find_all('tr', attrs={'class':'ts1'})
+    info_rows: list = soup.find_all('tr', attrs={'class':['ts0', 'ts1']})
 
-    row_td: list = [] 
-    for element in odd_rows:
+    for element in info_rows:
         row = element.find_all('td')
-        row_td.append(row)
         if(row[1].text.strip() == code):
             company_name.append(row[0].text.strip()) 
             company_ticker.append(row[1].text.strip()) 
@@ -24,17 +21,6 @@ def get_data(code, company_name: list, company_ticker, company_stock, change, pe
             change.append(float(str(row[4].text.strip()))) 
             percent_change.append(float(str(row[5].text.strip()).replace('%',''))) 
             volume.append(float(str(row[6].text.strip()).replace(',','')))  
-
-    for element in even_rows:
-        row = element.find_all('td')
-        row_td.append(element.find_all('td'))
-        if(row[1].text.strip() == code):
-            company_name.append(row[0].text.strip()) 
-            company_ticker.append(row[1].text.strip()) 
-            company_stock.append(float(row[3].text.strip()))
-            change.append(float(str(row[4].text.strip()))) 
-            percent_change.append(float(str(row[5].text.strip()))) 
-            volume.append(float(str(row[6].text.strip())))   
 
     time = np.array([time_stamp])    
     name = np.array(company_name)
