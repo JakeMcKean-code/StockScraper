@@ -33,8 +33,8 @@ def get_data(code, company_name: list, company_ticker, company_stock, change, pe
             company_ticker.append(row[1].text.strip()) 
             company_stock.append(float(row[3].text.strip()))
             change.append(float(str(row[4].text.strip()))) 
-            percent_change.append(float(str(row[5].text.strip()).replace('%',''))) 
-            volume.append(float(str(row[6].text.strip()).replace(',','')))   
+            percent_change.append(float(str(row[5].text.strip()))) 
+            volume.append(float(str(row[6].text.strip())))   
 
     time = np.array([time_stamp])    
     name = np.array(company_name)
@@ -57,7 +57,7 @@ def get_data(code, company_name: list, company_ticker, company_stock, change, pe
     volume = volume.reshape(len(volume),1)
 
     merged = np.concatenate((time, name,ticker,stock, change, percent_change, volume),axis=1)
-    data = pd.DataFrame({"Company name":merged[:,0], "Company ticker":merged[:,1],"Stock Price":merged[:,2], "Change":merged[:,3], "Percent Change":merged[:,4], "Volume":merged[:,5]})
+    data = pd.DataFrame({"Time": merged[:,0], "Company name":merged[:,1], "Company ticker":merged[:,2],"Stock Price":merged[:,3], "Change":merged[:,4], "Percent Change":merged[:,5], "Volume":merged[:,6]})
     print(data.head())
     return data
 
