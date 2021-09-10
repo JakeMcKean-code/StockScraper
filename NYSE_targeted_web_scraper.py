@@ -5,7 +5,7 @@ import numpy as np
 import time
 import datetime
 
-def get_data(code, company_name: list, company_ticker, company_stock, change, percent_change, volume):
+def get_data(code, company_name: list, company_ticker, company_stock, change, percent_change, volume, time_stamp):
     url: str = 'https://www.advfn.com/nyse/newyorkstockexchange.asp'
     page = requests.get(url)
     page_text: str = page.text
@@ -35,7 +35,8 @@ def get_data(code, company_name: list, company_ticker, company_stock, change, pe
             change.append(float(str(row[4].text.strip()))) 
             percent_change.append(float(str(row[5].text.strip()).replace('%',''))) 
             volume.append(float(str(row[6].text.strip()).replace(',','')))   
-        
+
+    time = np.array([time_stamp])    
     name = np.array(company_name)
     ticker = np.array(company_ticker)
     stock = np.array(company_stock)
@@ -47,6 +48,7 @@ def get_data(code, company_name: list, company_ticker, company_stock, change, pe
     ticker = np.delete(ticker,0)
     stock = np.delete(stock,0)
     
+    time = time.reshape(len(time),1)
     name = name.reshape(len(name),1)
     ticker = ticker.reshape(len(ticker),1)
     stock = stock.reshape(len(stock),1)
@@ -54,7 +56,7 @@ def get_data(code, company_name: list, company_ticker, company_stock, change, pe
     percent_change = percent_change.reshape(len(percent_change),1)
     volume = volume.reshape(len(volume),1)
 
-    merged = np.concatenate((name,ticker,stock, change, percent_change, volume),axis=1)
+    merged = np.concatenate((time, name,ticker,stock, change, percent_change, volume),axis=1)
     data = pd.DataFrame({"Company name":merged[:,0], "Company ticker":merged[:,1],"Stock Price":merged[:,2], "Change":merged[:,3], "Percent Change":merged[:,4], "Volume":merged[:,5]})
     print(data.head())
     return data
@@ -70,7 +72,7 @@ while True:
         change = []
         percentage_change = []
         volume = []
-        df = get_data(code, company_name, company_ticker, company_stock, change, percentage_change, volume)
+        df = get_data(code, company_name, company_ticker, company_stock, change, percentage_change, volume, timestamp)
         df.to_csv(str(timestamp[0:11]) + 'stock_data.csv', mode = 'a', header = False, index=None)
         del(df)
         print('----------------')
