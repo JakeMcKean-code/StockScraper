@@ -45,7 +45,7 @@ latest_price = float(latest_info.iloc[1])
 # Resample data to get the ohlc candlestick format
 data = list_of_dfs[0]['price'].resample('1Min').ohlc()   
 # Add new columns for rolling averages: !! NOTE add the drop rows code to get rid of NaNs that come from rolling averages
-data['MA5'] = data['close'].rolling(1).mean()
+data['MA5'] = data['close'].rolling(5).mean()
 data['MA10'] = data['close'].rolling(10).mean()
 data['MA20'] = data['close'].rolling(20).mean()
 # Make the index column a datetime format for the graph
