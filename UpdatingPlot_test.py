@@ -27,7 +27,7 @@ def split_dataframe(df: pd.DataFrame) -> list:
     return list_of_dataframes
 
 # Read in the dataframe and set the index and set the index to be a DatetimeIndex
-df = pd.read_csv('StockData.csv', index_col = 'time',usecols = [0,2,3,4,5,6],names=['time','stock_code','price','change','percent change','volume'])
+df = pd.read_csv('Test.csv', index_col = 'time',usecols = [0,2,3,4,5,6],names=['time','stock_code','price','change','percent change','volume'])
 df.index = pd.to_datetime(df.index, format='%Y-%m-%d %H:%M:%S')
 df.index = pd.DatetimeIndex(df.index)
 
@@ -60,7 +60,7 @@ for candle in candle_counter:
         data['high'][candle], data['low'][candle], \
             data['close'][candle]
     ohlc.append(append_me) # This is a list of tuples, each tuple is the ohlc info for the row in the resample
-    
+
 # ------------------------------------------------------------------------------------------------------------
 # Counter and x,y values for the graph
 counter = count() # Just counts up one number at a time

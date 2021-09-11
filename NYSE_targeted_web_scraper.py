@@ -34,23 +34,25 @@ def get_data(page_info, stock_code):
 
 
 def scraping(stock_list, interupt_time, interval_time):#interupt and interval time are passed as seconds
-    df = pd.DataFrame(columns=["Time", "Company name", "Company ticker", "Stock Price", "Change", "Percent Change", "Volume"])
-
+    
     start_time = time.time()
     current_time = time.time()
 
     while current_time - start_time < interupt_time:
         page_info = access_page_info()#returns the page information
         time_stamp = datetime.datetime.now() - datetime.timedelta(hours=5)#creates a time stamp for when the page was accessed and converts UK time to NY time
-        time_stamp = time_stamp.strftime('%y-%m-%d %H:%M:%S')#format the time stamp
+        time_stamp = time_stamp.strftime('%Y-%m-%d %H:%M:%S')#format the time stamp
         for stock_code in stock_list:
+            df = pd.DataFrame(columns=["Time", "Company name", "Company ticker", "Stock Price", "Change", "Percent Change", "Volume"])
             information: list = [time_stamp]#information list created and time_stamp added into it
             information.extend(get_data(page_info, stock_code))#returns the stock information and adds it into the list of information
             df.loc[len(df)] = information#adds the information list to the datatframe
-            df.to_csv('Test.csv',index=False)#saves all vales at once at the end of scraping
+            df.to_csv('Test.csv',mode='a',index=False, header=False)#saves all vales at once at the end of scraping
+            del(df)
 
         time.sleep(interval_time)#adds a sleep to the scaper after scraping the desired companies
         current_time = time.time()
+
 
 stocks = ['AA', 'ABEV']
 scraping(stocks, 60, 5)
