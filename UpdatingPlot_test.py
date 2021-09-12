@@ -18,14 +18,13 @@ def remove_NAN(df: pd.DataFrame):
     #Check if any nan values remain in the dataframe, if so delete the rows and reset the indiices
     if df.isnull().sum().sum() != 0:
         df.dropna(inplace=True)
-        df.reset_index(drop=True, inplace=True)
 
 
 def preprocessing() -> pd.DataFrame:
     # Read in the dataframe and set the index and set the index to be a DatetimeIndex
     df = pd.read_csv('Test.csv', index_col = 'time',usecols = [0,2,3,4,5,6],names=['time','stock_code','price','change','percent change','volume'])
-    remove_NAN(df)#remove any rows with NAN values that may exist
-    df.index = pd.to_datetime(df.index, format='%Y-%m-%d %H:%M:%S')
+    remove_NAN(df) #remove any rows with NAN values that may exist
+    df.index = pd.to_datetime(df.index, format='%Y-%m-%d %H:%M:%S') # NOTE: Don't actually need this line 
     df.index = pd.DatetimeIndex(df.index)
     return df
 
@@ -111,7 +110,6 @@ if(__name__ == '__main__'):
     for dataframe in list_of_dfs:
         list_of_latest_values.append(latest_values(dataframe))
         list_of_candle_ohlc.append( candle_ohlc( resample_and_rolling(dataframe) ) )
-        
 
     # ------------------------------------------------------------------------------------------------------------
     # Counter and x,y values for the graph
