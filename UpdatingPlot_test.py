@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from itertools import count
 from matplotlib.animation import FuncAnimation
 import datetime
-
 from pandas.core.frame import DataFrame
 
 
@@ -83,32 +82,6 @@ def candle_ohlc(data: pd.DataFrame) -> list:
         ohlc.append(append_me) # This is a list of tuples, each tuple is the ohlc info for the row in the resample
     return ohlc
 
-
-
-
-
-
-#-----------main----------
-
-df = preprocessing()
-
-#split into each stock code
-list_of_dfs = split_dataframe_by_stockcode(df)
-
-list_of_latest_values: list = []
-list_of_candle_ohlc: list = []
-
-for dataframe in list_of_dfs:
-    list_of_latest_values.append(latest_values(dataframe))
-    list_of_candle_ohlc.append( candle_ohlc( resample_and_rolling(dataframe) ) )
-    
-
-# ------------------------------------------------------------------------------------------------------------
-# Counter and x,y values for the graph
-counter = count() # Just counts up one number at a time
-x_vals = list() # empty list for the x and y vals
-y_vals = list()
-
 # Animation function
 def animate(i):
     # count 1 up in the counter
@@ -123,6 +96,29 @@ def animate(i):
     #print(x_vals)
     #plt.xticks([])
 
-# ani function that draws to gcf (get current figure), uses the animate function for its animation and updates at an interval of 1000ms
-ani = FuncAnimation(plt.gcf(),animate, interval = 1000)
-plt.show()
+
+
+#-----------main----------
+if(__name__ == '__main__'):
+    df = preprocessing()
+
+    #split into each stock code
+    list_of_dfs = split_dataframe_by_stockcode(df)
+
+    list_of_latest_values: list = []
+    list_of_candle_ohlc: list = []
+
+    for dataframe in list_of_dfs:
+        list_of_latest_values.append(latest_values(dataframe))
+        list_of_candle_ohlc.append( candle_ohlc( resample_and_rolling(dataframe) ) )
+        
+
+    # ------------------------------------------------------------------------------------------------------------
+    # Counter and x,y values for the graph
+    counter = count() # Just counts up one number at a time
+    x_vals = list() # empty list for the x and y vals
+    y_vals = list()
+
+    # ani function that draws to gcf (get current figure), uses the animate function for its animation and updates at an interval of 1000ms
+    ani = FuncAnimation(plt.gcf(),animate, interval = 1000)
+    plt.show()
