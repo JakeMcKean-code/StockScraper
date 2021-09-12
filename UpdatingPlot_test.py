@@ -36,7 +36,7 @@ def latest_values(df: pd.DataFrame) -> list:
     latest_info = df.iloc[-1,:] # last row on all columns
     latest_price = float(latest_info.iloc[1])
     latest_change = float(latest_info.iloc[2])
-    latest_percent_change = float(latest_info.iloc[3].replace('%',''))
+    latest_percent_change = float(str(latest_info.iloc[3]).replace('%',''))
     return latest_price, latest_change, latest_percent_change
 
 
@@ -63,9 +63,12 @@ def resample_and_rolling(df: pd.DataFrame) -> pd.DataFrame:
     data['MA5'] = data['close'].rolling(5).mean()
     data['MA10'] = data['close'].rolling(10).mean()
     data['MA20'] = data['close'].rolling(20).mean()
+
+    remove_NAN(data)#removes NAN rows produced by rolling averages
+    
     # Make the index column a datetime format for the graph
     data.index = pd.to_datetime(data.index, format='%Y-%m-%d %H:%M:%S')
-    return df
+    return data
 
 
 def candle_ohlc(data: pd.DataFrame) -> list:
