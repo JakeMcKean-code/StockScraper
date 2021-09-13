@@ -12,7 +12,45 @@ from itertools import count
 from matplotlib.animation import FuncAnimation
 import datetime
 from pandas.core.frame import DataFrame
+from matplotlib.gridspec import GridSpec
 
+# -------------- Create figure and subplots ---------------------
+
+fig = plt.figure()
+fig.patch.set_facecolor('#121416')
+gs = fig.add_gridspec(6,6)
+ax1 = fig.add_subplot(gs[0:4,0:4])
+ax2 = fig.add_subplot(gs[0,4:6])
+ax3 = fig.add_subplot(gs[1,4:6])
+ax4 = fig.add_subplot(gs[2,4:6])
+ax5 = fig.add_subplot(gs[3,4:6])
+ax6 = fig.add_subplot(gs[4,4:6])
+ax7 = fig.add_subplot(gs[5,4:6])
+ax8 = fig.add_subplot(gs[4,0:4])
+ax9 = fig.add_subplot(gs[5,0:4])
+
+def graph_design(ax):
+    ax.set_facecolor('#091217')
+    ax.tick_params(axis="both", labelsize=14,colors='white')
+    ax.ticklabel_format(useOffset=False)
+    ax.spines['bottom'].set_color('#808080')
+    ax.spines['top'].set_color('#808080')
+    ax.spines['left'].set_color('#808080')
+    ax.spines['right'].set_color('#808080')
+    return ax
+
+ax1 = graph_design(ax1)
+ax2 = graph_design(ax2)
+ax3 = graph_design(ax3)
+ax4 = graph_design(ax4)
+ax5 = graph_design(ax5)
+ax6 = graph_design(ax6)
+ax7 = graph_design(ax7)
+ax8 = graph_design(ax8)
+ax9 = graph_design(ax9)
+
+
+# -------------- Data functions ---------------------
 
 def remove_NAN(df: pd.DataFrame):
     #Check if any nan values remain in the dataframe, if so delete the rows and reset the indiices
@@ -86,18 +124,17 @@ def animate(i):
     # count 1 up in the counter
     count = next(counter)
     # clear current axis
-    plt.cla()
+    ax1.cla()
     # append timestamp to the x values and price to the y values
-    x_vals.append(list_of_dfs[1].index[count])
-    y_vals.append(list_of_dfs[1]['price'][count])
+    x_vals.append(list_of_dfs[0].index[count])
+    y_vals.append(list_of_dfs[0]['price'][count])
     # plot the graph
-    plt.plot(x_vals,y_vals)
+    ax1.plot(x_vals,y_vals)
     #print(x_vals)
     #plt.xticks([])
 
 
-
-#-----------main----------
+# -------------- Main ---------------------
 if(__name__ == '__main__'):
     df = preprocessing()
 
@@ -118,5 +155,5 @@ if(__name__ == '__main__'):
     y_vals = list()
 
     # ani function that draws to gcf (get current figure), uses the animate function for its animation and updates at an interval of 1000ms
-    ani = FuncAnimation(plt.gcf(),animate, interval = 1000)
+    ani = FuncAnimation(fig,animate, interval = 1000)
     plt.show()
