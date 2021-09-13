@@ -54,8 +54,8 @@ def scraping(stock_list, interupt_time, interval_time):#interupt and interval ti
         current_time = time.time()
 
 
-stocks = ['AA', 'ABEV']
-scraping(stocks, 60, 5)
+stocks = ['AA','BABA','F','LYG','NOK']
+scraping(stocks, 3600, 5)
 
 
 '''def get_data(code, company_name: list, company_ticker, company_stock, change, percent_change, volume, time_stamp):
