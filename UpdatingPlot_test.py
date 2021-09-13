@@ -88,8 +88,8 @@ def animate(i):
     # clear current axis
     plt.cla()
     # append timestamp to the x values and price to the y values
-    x_vals.append(list_of_dfs[0].index[count])
-    y_vals.append(list_of_dfs[0]['price'][count])
+    x_vals.append(list_of_dfs[1].index[count])
+    y_vals.append(list_of_dfs[1]['price'][count])
     # plot the graph
     plt.plot(x_vals,y_vals)
     #print(x_vals)
