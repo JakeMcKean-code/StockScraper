@@ -7,15 +7,41 @@ import time
 import datetime
 
 
-def soup_parser():
-    url: str = 'https://www.advfn.com/nyse/newyorkstockexchange.asp'
+def Get_exchange(exchange: str):
+    if exchange == "NASDAQ":
+        print("Using NASDAQ")
+        return True
+    elif exchange == "NYSE":
+        print("Using NYSE")
+        return True
+    elif exchange == "AMEX":
+        print("Using AMEX")
+        return True
+    else:
+        raise ValueError("Code not found")
+
+def get_stock_codes(page_info):
+    print("Available stock codes are: ")
+    list_of_codes = []
+    for element in page_info:
+        row = element.find_all('td')
+        list_of_codes.append(row[1].text.strip())
+    print(list_of_codes)
+
+def soup_parser(exchange):
+    if exchange == "NASDAQ":
+        url: str = 'https://www.advfn.com/nasdaq/nasdaq.asp'
+    elif exchange == "NYSE":
+        url: str = 'https://www.advfn.com/nyse/newyorkstockexchange.asp'
+    elif exchange == "AMEX":
+        url: str = 'https://www.advfn.com/amex/americanstockexchange.asp'
     page = requests.get(url)
     page_text: str = page.text
     soup = BeautifulSoup(page.text, 'html.parser')
     return soup
 
-def access_page_info():
-    soup = soup_parser()
+def access_page_info(exchange):
+    soup = soup_parser(exchange)
     info_rows: list = soup.find_all('tr', attrs={'class':['ts0', 'ts1']})
     return info_rows
 
@@ -33,13 +59,13 @@ def get_data(page_info, stock_code):
             return  company_name, company_ticker, company_stock, change, percent_change, volume
 
 
-def scraping(stock_list, interupt_time, interval_time):#interupt and interval time are passed as seconds
+def scraping(exchange, stock_list, interupt_time, interval_time):#interupt and interval time are passed as seconds
     
     start_time = time.time()
     current_time = time.time()
 
     while current_time - start_time < interupt_time:
-        page_info = access_page_info()#returns the page information
+        page_info = access_page_info(exchange)#returns the page information
         time_stamp = datetime.datetime.now() - datetime.timedelta(hours=5)#creates a time stamp for when the page was accessed and converts UK time to NY time
         time_stamp = time_stamp.strftime('%Y-%m-%d %H:%M:%S')#format the time stamp
         for stock_code in stock_list:
@@ -47,74 +73,22 @@ def scraping(stock_list, interupt_time, interval_time):#interupt and interval ti
             information: list = [time_stamp]#information list created and time_stamp added into it
             information.extend(get_data(page_info, stock_code))#returns the stock information and adds it into the list of information
             df.loc[len(df)] = information#adds the information list to the datatframe
-            df.to_csv('Test.csv',mode='a',index=False, header=False)#saves all vales at once at the end of scraping
+            df.to_csv('inputTest.csv',mode='a',index=False, header=False)#saves all vales at once at the end of scraping
             del(df)
 
         time.sleep(interval_time)#adds a sleep to the scaper after scraping the desired companies
         current_time = time.time()
 
+# --------------- Main ----------------
 
-stocks = ['AA','BABA','F','LYG','NOK']
-scraping(stocks, 3600, 5)
+if __name__ == "__main__":
+    exchange = input("Enter exchange: ")
+    if(Get_exchange(exchange) == True):
+        page_info = access_page_info(exchange)
+        get_stock_codes(page_info)
 
+    stocks = input("Enter your stock codes separated by a space: ")
+    stocks = stocks.split()
 
-'''def get_data(code, company_name: list, company_ticker, company_stock, change, percent_change, volume, time_stamp):
-    url: str = 'https://www.advfn.com/nyse/newyorkstockexchange.asp'
-    page = requests.get(url)
-    page_text: str = page.text
-    soup = BeautifulSoup(page.text, 'html.parser')
-    info_rows: list = soup.find_all('tr', attrs={'class':['ts0', 'ts1']})
-
-    for element in info_rows:
-        row = element.find_all('td')
-        if(row[1].text.strip() == code):
-            company_name.append(row[0].text.strip()) 
-            company_ticker.append(row[1].text.strip()) 
-            company_stock.append(float(str(row[3].text.strip())))
-            change.append(float(str(row[4].text.strip()))) 
-            percent_change.append(float(str(row[5].text.strip()).replace('%',''))) 
-            volume.append(float(str(row[6].text.strip()).replace(',','')))  
-
-    time = np.array([time_stamp])    
-    name = np.array(company_name)
-    ticker = np.array(company_ticker)
-    stock = np.array(company_stock)
-    change = np.array(change)
-    percent_change = np.array(percent_change)
-    volume = np.array(volume)
-    
-    print(name)
-    name = np.delete(name,0)
-    print(name)
-    ticker = np.delete(ticker,0)
-    stock = np.delete(stock,0)
-    
-    time = time.reshape(len(time),1)
-    name = name.reshape(len(name),1)
-    ticker = ticker.reshape(len(ticker),1)
-    stock = stock.reshape(len(stock),1)
-    change = change.reshape(len(change),1)
-    percent_change = percent_change.reshape(len(percent_change),1)
-    volume = volume.reshape(len(volume),1)
-
-    merged = np.concatenate((time, name,ticker,stock, change, percent_change, volume),axis=1)
-    data = pd.DataFrame({"Time": merged[:,0], "Company name":merged[:,1], "Company ticker":merged[:,2],"Stock Price":merged[:,3], "Change":merged[:,4], "Percent Change":merged[:,5], "Volume":merged[:,6]})
-    #print(data.head())
-    return data
-
-stocks = ['AA', 'ABEV']
-while True:
-    for code in stocks:
-        timestamp = datetime.datetime.now() - datetime.timedelta(hours = 5) # take into account time difference between here and NY
-        timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
-        company_name = [str]
-        company_ticker = [str]
-        company_stock = [float]
-        change = []
-        percentage_change = []
-        volume = []
-        df = get_data(code, company_name, company_ticker, company_stock, change, percentage_change, volume, timestamp)
-        #df.to_csv(str(timestamp[0:11]) + 'stock_data.csv', mode = 'a', header = False, index=None)
-        del(df)
-        print('----------------')
-    time.sleep(5)'''
+    #stocks = ['AA','BABA','F','LYG','NOK']
+    scraping(exchange, stocks, 60, 5)
