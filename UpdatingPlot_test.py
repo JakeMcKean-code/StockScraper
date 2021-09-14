@@ -31,7 +31,7 @@ ax9 = fig.add_subplot(gs[5,0:4])
 
 def graph_design(ax):
     ax.set_facecolor('#091217')
-    ax.tick_params(axis="both", labelsize=14,colors='white')
+    ax.tick_params(axis="both", labelsize=8, colors='white')
     ax.ticklabel_format(useOffset=False)
     ax.spines['bottom'].set_color('#808080')
     ax.spines['top'].set_color('#808080')
@@ -155,5 +155,9 @@ if(__name__ == '__main__'):
     y_vals = list()
 
     # ani function that draws to gcf (get current figure), uses the animate function for its animation and updates at an interval of 1000ms
-    ani = FuncAnimation(fig,animate, interval = 1000)
+    ani = FuncAnimation(fig, animate, interval = 1000)
+
+    #manager = plt.get_current_fig_manager()
+    #manager.full_screen_toggle()
+
     plt.show()
