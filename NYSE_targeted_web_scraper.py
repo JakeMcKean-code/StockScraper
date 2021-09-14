@@ -7,28 +7,31 @@ import time
 import datetime
 
 
-def Get_exchange(exchange: str):
+def check_exchange(exchange: str) -> bool:
     if exchange == "NASDAQ":
-        print("Using NASDAQ")
+        print(f"Using {exchange}.")
         return True
     elif exchange == "NYSE":
-        print("Using NYSE")
+        print(f"Using {exchange}.")
         return True
     elif exchange == "AMEX":
-        print("Using AMEX")
+        print(f"Using {exchange}.")
         return True
     else:
-        raise ValueError("Code not found")
+        #raise ValueError("Code not found.")
+        print('ValueError: Code not found.')
+        return False
 
-def get_stock_codes(page_info):
+def get_stock_codes(page_info) -> None:
     print("Available stock codes are: ")
     list_of_codes = []
     for element in page_info:
         row = element.find_all('td')
         list_of_codes.append(row[1].text.strip())
     print(list_of_codes)
+    return list_of_codes
 
-def soup_parser(exchange):
+def soup_parser(exchange) -> BeautifulSoup:
     if exchange == "NASDAQ":
         url: str = 'https://www.advfn.com/nasdaq/nasdaq.asp'
     elif exchange == "NYSE":
@@ -36,16 +39,16 @@ def soup_parser(exchange):
     elif exchange == "AMEX":
         url: str = 'https://www.advfn.com/amex/americanstockexchange.asp'
     page = requests.get(url)
-    page_text: str = page.text
+    page_text: str = page.text #line not needed at the moment
     soup = BeautifulSoup(page.text, 'html.parser')
     return soup
 
-def access_page_info(exchange):
+def access_page_info(exchange) -> list:
     soup = soup_parser(exchange)
     info_rows: list = soup.find_all('tr', attrs={'class':['ts0', 'ts1']})
     return info_rows
 
-def get_data(page_info, stock_code):
+def get_data(page_info, stock_code) -> list:
     for element in page_info:
         row = element.find_all('td')
         if(row[1].text.strip() == stock_code):
@@ -59,7 +62,7 @@ def get_data(page_info, stock_code):
             return  company_name, company_ticker, company_stock, change, percent_change, volume
 
 
-def scraping(exchange, stock_list, interupt_time, interval_time):#interupt and interval time are passed as seconds
+def scraping(exchange, stock_list, interupt_time, interval_time) -> None:#interupt and interval time are passed as seconds
     
     start_time = time.time()
     current_time = time.time()
@@ -82,13 +85,27 @@ def scraping(exchange, stock_list, interupt_time, interval_time):#interupt and i
 # --------------- Main ----------------
 
 if __name__ == "__main__":
-    exchange = input("Enter exchange: ")
-    if(Get_exchange(exchange) == True):
-        page_info = access_page_info(exchange)
-        get_stock_codes(page_info)
+    stock_codes: list = []
+    loop_condition: bool = False
+    while loop_condition == False:
+        exchange = input("Enter exchange (Allowed exchanges are: NASDAQ, NYSE, AMEX): ")
+        if(check_exchange(exchange.upper()) == True):
+            loop_condition = True
+            page_info = access_page_info(exchange.upper())
+            stock_codes = get_stock_codes(page_info)
 
-    stocks = input("Enter your stock codes separated by a space: ")
-    stocks = stocks.split()
+    loop_condition = False
+    while loop_condition == False:
+        stocks = input("Enter your stock codes separated by a space: ").split()
+        for element, stock in enumerate(stocks):
+            if stock.upper() not in stock_codes:
+                print(f'ValueError: Code "{stock.upper()}" not found.')
+                loop_condition = False
+                break
+            else:
+                loop_condition = True
+                stocks[element] = stock.upper()
+    print(f'Using stock codes: {stocks}.')
 
     #stocks = ['AA','BABA','F','LYG','NOK']
     scraping(exchange, stocks, 60, 5)
