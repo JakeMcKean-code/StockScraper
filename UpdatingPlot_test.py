@@ -13,6 +13,7 @@ from matplotlib.animation import FuncAnimation
 import datetime
 from pandas.core.frame import DataFrame
 from matplotlib.gridspec import GridSpec
+from mplfinance.original_flavor import candlestick_ochl
 
 # -------------- Create figure and subplots ---------------------
 
@@ -96,9 +97,9 @@ def resample_and_rolling(df: pd.DataFrame) -> pd.DataFrame:
     # Resample data to get the ohlc candlestick format
     data = df['price'].resample('1Min').ohlc()  
     # Add new columns for rolling averages: !! NOTE add the drop rows code to get rid of NaNs that come from rolling averages
-    data['MA5'] = data['close'].rolling(5).mean()
-    data['MA10'] = data['close'].rolling(10).mean()
-    data['MA20'] = data['close'].rolling(20).mean()
+    #data['MA5'] = data['close'].rolling(5).mean()
+    #data['MA10'] = data['close'].rolling(10).mean()
+    #data['MA20'] = data['close'].rolling(20).mean()
 
     remove_NAN(data)#removes NAN rows produced by rolling averages
     
@@ -126,12 +127,40 @@ def animate(i):
     # clear current axis
     ax1.cla()
     # append timestamp to the x values and price to the y values
-    x_vals.append(list_of_dfs[0].index[count])
-    y_vals.append(list_of_dfs[0]['price'][count])
+    x_vals.append(list_of_dfs[1].index[count])
+    y_vals.append(list_of_dfs[1]['price'][count])
     # plot the graph
     ax1.plot(x_vals,y_vals)
     #print(x_vals)
     #plt.xticks([])
+
+    latest_price = list_of_dfs[1]['price'][count]
+    latest_change = list_of_dfs[1]['change'][count]
+    
+    ax1.text(0.005,1.10,latest_price,transform=ax1.transAxes, color = 'black', fontsize = 18,
+             fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
+             bbox=dict(facecolor='#FFBF00'))
+    
+    if str(latest_change)[0] == "-":
+        colorcode = 'red'
+    else:
+        colorcode = '#18b800'
+
+    ax1.text(0.5,1.10,latest_change,transform=ax1.transAxes, color = colorcode, fontsize = 18,
+             fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
+    
+    time_stamp  = datetime.datetime.now()
+    time_stamp = time_stamp.strftime("%Y-%m-%d %H:%M:%S")
+    
+    ax1.text(1.4,1.05,time_stamp,transform=ax1.transAxes, color = 'white', fontsize = 12,
+             fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
+    
+    ax1.grid(True, color = 'grey', linestyle = '-', which = 'major', axis = 'both',
+             linewidth = 0.3)
+
+    candle_y_vals_all = ( candle_ohlc( resample_and_rolling(list_of_dfs[1]) ) )
+    candle_y_vals = candle_y_vals_all[:count]
+    candlestick_ochl(ax8,candle_y_vals,width = 0.4, colorup='#18b800', colordown ='#ff3503')
 
 
 # -------------- Main ---------------------
@@ -143,11 +172,11 @@ if(__name__ == '__main__'):
 
     list_of_latest_values: list = []
     list_of_candle_ohlc: list = []
-
+    
     for dataframe in list_of_dfs:
-        list_of_latest_values.append(latest_values(dataframe))
+        list_of_latest_values = list(latest_values(dataframe))
         list_of_candle_ohlc.append( candle_ohlc( resample_and_rolling(dataframe) ) )
-
+    
     # ------------------------------------------------------------------------------------------------------------
     # Counter and x,y values for the graph
     counter = count() # Just counts up one number at a time
@@ -156,7 +185,7 @@ if(__name__ == '__main__'):
 
     # ani function that draws to gcf (get current figure), uses the animate function for its animation and updates at an interval of 1000ms
     ani = FuncAnimation(fig, animate, interval = 1000)
-
+    
     #manager = plt.get_current_fig_manager()
     #manager.full_screen_toggle()
 
