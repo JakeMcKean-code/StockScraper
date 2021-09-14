@@ -97,9 +97,9 @@ def resample_and_rolling(df: pd.DataFrame) -> pd.DataFrame:
     # Resample data to get the ohlc candlestick format
     data = df['price'].resample('1Min').ohlc()  
     # Add new columns for rolling averages: !! NOTE add the drop rows code to get rid of NaNs that come from rolling averages
-    #data['MA5'] = data['close'].rolling(5).mean()
-    #data['MA10'] = data['close'].rolling(10).mean()
-    #data['MA20'] = data['close'].rolling(20).mean()
+    data['MA1'] = data['close'].rolling(1).mean()
+    data['MA2'] = data['close'].rolling(2).mean()
+    data['MA3'] = data['close'].rolling(3).mean()
 
     remove_NAN(data)#removes NAN rows produced by rolling averages
     
@@ -162,6 +162,18 @@ def animate(i):
     candle_y_vals = candle_y_vals_all[:count]
     candlestick_ochl(ax8,candle_y_vals,width = 0.4, colorup='#18b800', colordown ='#ff3503')
 
+    ma1_vals = []
+    ma1_vals.append(list_of_rolling_averages[1]['MA1'][count])
+    ma2_vals = []
+    ma2_vals.append(list_of_rolling_averages[1]['MA2'][count])
+    ma3_vals = []
+    ma3_vals.append(list_of_rolling_averages[1]['MA3'][count])
+    x_average_vals = []
+    x_average_vals.append(list_of_rolling_averages[1].index[count])
+    print(list_of_rolling_averages[1].index[count])
+    ax2.plot(x_average_vals,ma1_vals, color = 'orange')
+
+
 
 # -------------- Main ---------------------
 if(__name__ == '__main__'):
@@ -172,11 +184,14 @@ if(__name__ == '__main__'):
 
     list_of_latest_values: list = []
     list_of_candle_ohlc: list = []
+    list_of_rolling_averages: list = []
     
     for dataframe in list_of_dfs:
         list_of_latest_values = list(latest_values(dataframe))
         list_of_candle_ohlc.append( candle_ohlc( resample_and_rolling(dataframe) ) )
-    
+        list_of_rolling_averages.append( resample_and_rolling( dataframe))
+
+
     # ------------------------------------------------------------------------------------------------------------
     # Counter and x,y values for the graph
     counter = count() # Just counts up one number at a time
