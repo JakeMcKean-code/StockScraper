@@ -109,7 +109,7 @@ def split_dataframe_by_stockcode(df: pd.DataFrame) -> list:
 def resample_and_rolling(df: pd.DataFrame) -> pd.DataFrame:
     # Resample data to get the ohlc candlestick format
     data = df['price'].resample('1Min').ohlc()  
-    # Add new columns for rolling averages: !! NOTE add the drop rows code to get rid of NaNs that come from rolling averages
+    # Add new columns for rolling averages
     data['MA1'] = data['close'].rolling(1).mean()
     data['MA2'] = data['close'].rolling(2).mean()
     data['MA3'] = data['close'].rolling(3).mean()
@@ -142,19 +142,19 @@ def animate(i):
     # append timestamp to the x values and price to the y values
     #x_vals.append(list_of_dfs[1].index[count])
     #y_vals.append(list_of_dfs[1]['price'][count])
-    x_vals.append(list_of_rolling_averages[1].index[count])
-    y_vals.append(list_of_rolling_averages[1]['open'][count])
+    #x_vals.append(list_of_rolling_averages[1].index[count])
+    y_vals.append(list_of_rolling_averages[0]['open'][count+1])
     # plot the graph
-    ax1.plot(x_vals,y_vals, label = 'Open Stock Price')
+    #ax1.plot(x_vals,y_vals, label = 'Open Stock Price')
     #print(x_vals)
     #plt.xticks([])
 
-    latest_price = list_of_dfs[1]['price'][count]
-    latest_change = list_of_dfs[1]['change'][count]
+    latest_price = list_of_dfs[0]['price'][count]
+    latest_change = list_of_dfs[0]['change'][count]
     
 
     #adds the stock code and the current price above the main plot in black font with a yellow background
-    ax1.text(0.005,1.10, f'{list_of_codes[1]}: {latest_price}', transform=ax1.transAxes, color = 'black', fontsize = 18,
+    ax1.text(0.005,1.10, f'{list_of_codes[0]}: {latest_price}', transform=ax1.transAxes, color = 'black', fontsize = 18,
              fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
              bbox=dict(facecolor='#FFBF00'))
     
@@ -164,7 +164,7 @@ def animate(i):
         colorcode = '#18b800'
 
     #adds the latest change (from open) above the main plot in red for -ve change and green for +ve change
-    ax1.text(0.5,1.10, latest_change, transform=ax1.transAxes, color = colorcode, fontsize = 18,
+    ax1.text(0.8,1.10, latest_change, transform=ax1.transAxes, color = colorcode, fontsize = 18,
              fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
     
     time_stamp  = datetime.datetime.now()
@@ -178,20 +178,18 @@ def animate(i):
              linewidth = 0.3)
 
     #plotting the candlesticks
-    df = list_of_dfs[1]['price'].resample('1Min').ohlc()[:count+1]
-    mpf.plot(df, type='candle', ax=ax8, style=s)
+    df = list_of_dfs[0]['price'].resample('1Min').ohlc()[:count+1]
+    mpf.plot(df, type='candle', ax=ax1, style=s)
     del df
-
+    ax1.plot(y_vals, label = 'Open Stock Price')
     
-    ma1_vals.append(list_of_rolling_averages[1]['MA1'][count])
-    ma2_vals.append(list_of_rolling_averages[1]['MA2'][count])
-    ma3_vals.append(list_of_rolling_averages[1]['MA3'][count])
-    ax1.plot(x_vals,ma1_vals, color = 'orange',alpha=0.5, label = '1 Min Average')
-    ax1.plot(x_vals,ma2_vals, color = 'brown',alpha=0.5, label = '2 Min Average')
-    ax1.plot(x_vals,ma3_vals, color = 'blue',alpha=0.5, label = '3 Min Average')
+    ma1_vals.append(list_of_rolling_averages[0]['MA1'][count])
+    ma2_vals.append(list_of_rolling_averages[0]['MA2'][count])
+    ma3_vals.append(list_of_rolling_averages[0]['MA3'][count])
+   # ax1.plot(x_vals,ma1_vals, color = 'orange',alpha=0.5, label = '1 Min Average')
+   # ax1.plot(x_vals,ma2_vals, color = 'brown',alpha=0.5, label = '2 Min Average')
+   # ax1.plot(x_vals,ma3_vals, color = 'blue',alpha=0.5, label = '3 Min Average')
     legend = ax1.legend(loc='upper left', facecolor = '#121416', fontsize = 10) # NOTE: Change font colour to see 
-    #for text in leg.get_text():
-    #    plt.setp(text, color='white')
     plt.setp(legend.get_texts(), color='w')
 
 
