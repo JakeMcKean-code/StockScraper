@@ -149,7 +149,7 @@ def animate(i):
     #print(x_vals)
     #plt.xticks([])
 
-    latest_price = list_of_dfs[0]['price'][count]
+    latest_price = list_of_rolling_averages[0]['open'][count+1]
     latest_change = list_of_dfs[0]['change'][count]
     
 
