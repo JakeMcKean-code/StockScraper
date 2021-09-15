@@ -5,6 +5,7 @@ Created on Sat Sep  4 12:25:25 2021
 @author: Jake McKean
 """
 # Import scraing tool as a module
+from matplotlib import axes
 from NYSE_targeted_web_scraper import run_scraping
 
 # Import libraries
@@ -15,7 +16,15 @@ from matplotlib.animation import FuncAnimation
 import datetime
 from pandas.core.frame import DataFrame
 from matplotlib.gridspec import GridSpec
-from mplfinance.original_flavor import candlestick_ochl
+#from mplfinance.original_flavor import candlestick_ochl
+import mplfinance as mpf
+
+mc = mpf.make_marketcolors(
+                            up='#18b800',down='#ff3503',
+                            wick={'up':'#18b800','down':'#ff3503'},
+                        )
+
+s  = mpf.make_mpf_style(marketcolors=mc)
 
 # -------------- Create figure and subplots ---------------------
 
@@ -90,9 +99,11 @@ def str_to_num(df: pd.DataFrame, column: str) -> pd.DataFrame:
 # Function to group and split the full dataframe by the stock tickers
 def split_dataframe_by_stockcode(df: pd.DataFrame) -> list:
     list_of_dataframes: pd.DataFrame = []
+    list_of_codes: list = []
     for code, df_code in df.groupby('stock_code'):
+        list_of_codes.append(code)
         list_of_dataframes.append(df_code)
-    return list_of_dataframes
+    return list_of_codes, list_of_dataframes
 
 
 def resample_and_rolling(df: pd.DataFrame) -> pd.DataFrame:
@@ -141,7 +152,9 @@ def animate(i):
     latest_price = list_of_dfs[1]['price'][count]
     latest_change = list_of_dfs[1]['change'][count]
     
-    ax1.text(0.005,1.10,latest_price,transform=ax1.transAxes, color = 'black', fontsize = 18,
+
+    #adds the stock code and the current price above the main plot in black font with a yellow background
+    ax1.text(0.005,1.10, f'{list_of_codes[1]}: {latest_price}', transform=ax1.transAxes, color = 'black', fontsize = 18,
              fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
              bbox=dict(facecolor='#FFBF00'))
     
@@ -150,21 +163,24 @@ def animate(i):
     else:
         colorcode = '#18b800'
 
-    ax1.text(0.5,1.10,latest_change,transform=ax1.transAxes, color = colorcode, fontsize = 18,
+    #adds the latest change (from open) above the main plot in red for -ve change and green for +ve change
+    ax1.text(0.5,1.10, latest_change, transform=ax1.transAxes, color = colorcode, fontsize = 18,
              fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
     
     time_stamp  = datetime.datetime.now()
     time_stamp = time_stamp.strftime("%Y-%m-%d %H:%M:%S")
     
+    #adds the time stamp in the top right hand corner of the figure
     ax1.text(1.4,1.05,time_stamp,transform=ax1.transAxes, color = 'white', fontsize = 12,
              fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
-    
+    #adds a grid to the main plot
     ax1.grid(True, color = 'grey', linestyle = '-', which = 'major', axis = 'both',
              linewidth = 0.3)
 
-    candle_y_vals_all = ( candle_ohlc( resample_and_rolling(list_of_dfs[1]) ) )
-    candle_y_vals = candle_y_vals_all[:count]
-    candlestick_ochl(ax8,candle_y_vals,width = 0.4, colorup='#18b800', colordown ='#ff3503')
+    #plotting the candlesticks
+    df = list_of_dfs[1]['price'].resample('1Min').ohlc()[:count+1]
+    mpf.plot(df, type='candle', ax=ax8, style=s)
+    del df
 
     
     ma1_vals.append(list_of_rolling_averages[1]['MA1'][count])
@@ -173,19 +189,21 @@ def animate(i):
     ax1.plot(x_vals,ma1_vals, color = 'orange',alpha=0.5, label = '1 Min Average')
     ax1.plot(x_vals,ma2_vals, color = 'brown',alpha=0.5, label = '2 Min Average')
     ax1.plot(x_vals,ma3_vals, color = 'blue',alpha=0.5, label = '3 Min Average')
-    leg = ax1.legend(loc='upper left', facecolor = '#121416', fontsize = 10) # NOTE: Change font colour to see 
+    legend = ax1.legend(loc='upper left', facecolor = '#121416', fontsize = 10) # NOTE: Change font colour to see 
     #for text in leg.get_text():
     #    plt.setp(text, color='white')
-
+    plt.setp(legend.get_texts(), color='w')
 
 
 
 # -------------- Main ---------------------
-if(__name__ == '__main__'):
+if __name__ == '__main__':
+    #run_scraping('InputTest', 60, 5) #runs the scraper and therefore makes the csv file
+
     df = preprocessing()
 
     #split into each stock code
-    list_of_dfs = split_dataframe_by_stockcode(df)
+    list_of_codes, list_of_dfs = split_dataframe_by_stockcode(df)
 
     list_of_latest_values: list = []
     list_of_candle_ohlc: list = []
@@ -195,7 +213,7 @@ if(__name__ == '__main__'):
         list_of_latest_values = list(latest_values(dataframe))
         list_of_candle_ohlc.append( candle_ohlc( resample_and_rolling(dataframe) ) )
         list_of_rolling_averages.append( resample_and_rolling( dataframe))
-
+    
 
     # ------------------------------------------------------------------------------------------------------------
     # Counter and x,y values for the graph
