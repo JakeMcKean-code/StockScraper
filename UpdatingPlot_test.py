@@ -132,7 +132,7 @@ def animate(i):
     x_vals.append(list_of_rolling_averages[1].index[count])
     y_vals.append(list_of_rolling_averages[1]['open'][count])
     # plot the graph
-    ax1.plot(x_vals,y_vals)
+    ax1.plot(x_vals,y_vals, label = 'Open Stock Price')
     #print(x_vals)
     #plt.xticks([])
 
@@ -164,16 +164,17 @@ def animate(i):
     candle_y_vals = candle_y_vals_all[:count]
     candlestick_ochl(ax8,candle_y_vals,width = 0.4, colorup='#18b800', colordown ='#ff3503')
 
-    ma1_vals = []
+    
     ma1_vals.append(list_of_rolling_averages[1]['MA1'][count])
-    ma2_vals = []
     ma2_vals.append(list_of_rolling_averages[1]['MA2'][count])
-    ma3_vals = []
     ma3_vals.append(list_of_rolling_averages[1]['MA3'][count])
-    x_average_vals = []
-    x_average_vals.append(list_of_rolling_averages[1].index[count])
-    print(x_average_vals)
-    ax1.scatter(x_average_vals,ma1_vals, color = 'orange')
+    ax1.plot(x_vals,ma1_vals, color = 'orange',alpha=0.5, label = '1 Min Average')
+    ax1.plot(x_vals,ma2_vals, color = 'brown',alpha=0.5, label = '2 Min Average')
+    ax1.plot(x_vals,ma3_vals, color = 'blue',alpha=0.5, label = '3 Min Average')
+    leg = ax1.legend(loc='upper left', facecolor = '#121416', fontsize = 10) # NOTE: Change font colour to see 
+    #for text in leg.get_text():
+    #    plt.setp(text, color='white')
+
 
 
 
@@ -199,6 +200,9 @@ if(__name__ == '__main__'):
     counter = count() # Just counts up one number at a time
     x_vals = list() # empty list for the x and y vals
     y_vals = list()
+    ma1_vals = list()
+    ma2_vals = list()
+    ma3_vals = list()
 
     # ani function that draws to gcf (get current figure), uses the animate function for its animation and updates at an interval of 1000ms
     ani = FuncAnimation(fig, animate, interval = 1000)
