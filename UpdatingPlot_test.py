@@ -127,8 +127,10 @@ def animate(i):
     # clear current axis
     ax1.cla()
     # append timestamp to the x values and price to the y values
-    x_vals.append(list_of_dfs[1].index[count])
-    y_vals.append(list_of_dfs[1]['price'][count])
+    #x_vals.append(list_of_dfs[1].index[count])
+    #y_vals.append(list_of_dfs[1]['price'][count])
+    x_vals.append(list_of_rolling_averages[1].index[count])
+    y_vals.append(list_of_rolling_averages[1]['open'][count])
     # plot the graph
     ax1.plot(x_vals,y_vals)
     #print(x_vals)
@@ -170,8 +172,8 @@ def animate(i):
     ma3_vals.append(list_of_rolling_averages[1]['MA3'][count])
     x_average_vals = []
     x_average_vals.append(list_of_rolling_averages[1].index[count])
-    print(list_of_rolling_averages[1].index[count])
-    ax2.plot(x_average_vals,ma1_vals, color = 'orange')
+    print(x_average_vals)
+    ax1.scatter(x_average_vals,ma1_vals, color = 'orange')
 
 
 
