@@ -4,6 +4,8 @@ Created on Sat Sep  4 12:25:25 2021
 
 @author: Jake McKean
 """
+# Import scraing tool as a module
+from NYSE_targeted_web_scraper import run_scraping
 
 # Import libraries
 import pandas as pd

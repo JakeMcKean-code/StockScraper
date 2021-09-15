@@ -62,7 +62,7 @@ def get_data(page_info, stock_code) -> list:
             return  company_name, company_ticker, company_stock, change, percent_change, volume
 
 
-def scraping(exchange, stock_list, interupt_time, interval_time) -> None:#interupt and interval time are passed as seconds
+def create_csv(file_name: str, exchange, stock_list, interupt_time, interval_time) -> None:#interupt and interval time are passed as seconds
     
     start_time = time.time()
     current_time = time.time()
@@ -76,15 +76,14 @@ def scraping(exchange, stock_list, interupt_time, interval_time) -> None:#interu
             information: list = [time_stamp]#information list created and time_stamp added into it
             information.extend(get_data(page_info, stock_code))#returns the stock information and adds it into the list of information
             df.loc[len(df)] = information#adds the information list to the datatframe
-            df.to_csv('inputTest.csv',mode='a',index=False, header=False)#saves all vales at once at the end of scraping
+            df.to_csv(f'{file_name}.csv', mode='a', index=False, header=False)#saves all vales at once at the end of scraping
             del(df)
 
         time.sleep(interval_time)#adds a sleep to the scaper after scraping the desired companies
         current_time = time.time()
 
-# --------------- Main ----------------
 
-if __name__ == "__main__":
+def run_scraping(file_name: str, run_time: int, sleep_time: int):
     stock_codes: list = []
     loop_condition: bool = False
     while loop_condition == False:
@@ -107,5 +106,4 @@ if __name__ == "__main__":
                 stocks[element] = stock.upper()
     print(f'Using stock codes: {stocks}.')
 
-    #stocks = ['AA','BABA','F','LYG','NOK']
-    scraping(exchange, stocks, 60, 5)
+    create_csv(file_name, exchange, stocks, run_time, sleep_time)
