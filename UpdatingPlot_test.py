@@ -189,7 +189,7 @@ def animate(i):
    # ax1.plot(x_vals,ma1_vals, color = 'orange',alpha=0.5, label = '1 Min Average')
    # ax1.plot(x_vals,ma2_vals, color = 'brown',alpha=0.5, label = '2 Min Average')
    # ax1.plot(x_vals,ma3_vals, color = 'blue',alpha=0.5, label = '3 Min Average')
-    legend = ax1.legend(loc='upper left', facecolor = '#121416', fontsize = 10) # NOTE: Change font colour to see 
+    legend = ax1.legend(loc='upper left', facecolor = '#121416', fontsize = 10) 
     plt.setp(legend.get_texts(), color='w')
 
 
