@@ -143,7 +143,7 @@ def ax1_plotting(count: count) -> None:
     #df = list_of_dfs[0]['price'].resample('1Min').ohlc()[:count+1]
     df = list_of_rolling_averages[0].drop(columns=['MA1', 'MA2', 'MA3'])[:count+1]
     mpf.plot(df, type='candle', ax=ax1, style=s, xrotation=0)
-    mpf.plot(df, type='line', ax=ax1, style=s, xrotation=0, label='Test')#currently no way to add a legend that I can see
+    mpf.plot(df, type='line', ax=ax1, mav=(2,3), style=s, xrotation=0)#currently no way to add a legend that I can see
     del df
 
     
