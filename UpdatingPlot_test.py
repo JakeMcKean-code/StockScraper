@@ -162,7 +162,7 @@ def ax1_plotting(count: count) -> None:
     #ax1.plot(x_vals,ma2_vals, color = 'brown',alpha=0.5, label = '2 Min Average')
     #ax1.plot(x_vals,ma3_vals, color = 'blue',alpha=0.5, label = '3 Min Average')
 
-    latest_price = list_of_rolling_averages[0]['open'][count+1]
+    latest_price = list_of_rolling_averages[0]['close'][count+1]
     latest_change = list_of_dfs[0]['change'][count+1]
     #adds the stock code and the current price above the main plot in black font with a yellow background
     ax1.text(0.005,1.10, f'{list_of_codes[0]}: {latest_price}', transform=ax1.transAxes, color = 'black', fontsize = 18,
