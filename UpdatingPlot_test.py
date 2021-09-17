@@ -108,11 +108,13 @@ def split_dataframe_by_stockcode(df: pd.DataFrame) -> list:
 
 def resample_and_rolling(df: pd.DataFrame) -> pd.DataFrame:
     # Resample data to get the ohlc candlestick format
-    data = df['price'].resample('1Min').ohlc()  
+    data = df['price'].resample('1Min').ohlc()
+    resampled_volume = df['volume'].resample('1Min').mean()
     # Add new columns for rolling averages
     data['MA1'] = data['close'].rolling(1).mean()
     data['MA2'] = data['close'].rolling(2).mean()
     data['MA3'] = data['close'].rolling(3).mean()
+    data['volume'] = resampled_volume
 
     remove_NAN(data)#removes NAN rows produced by rolling averages
     
@@ -142,8 +144,14 @@ def ax1_plotting(count: count) -> None:
     #plotting the candlesticks
     #df = list_of_dfs[0]['price'].resample('1Min').ohlc()[:count+1]
     df = list_of_rolling_averages[0].drop(columns=['MA1', 'MA2', 'MA3'])[:count+1]
-    mpf.plot(df, type='candle', ax=ax1, style=s, xrotation=0)
-    mpf.plot(df, type='line', ax=ax1, mav=(2,3), style=s, xrotation=0)#currently no way to add a legend that I can see
+    print(df)
+    mpf.plot(df, type='candle',  ax=ax1, style=s, xrotation=0)
+    mpf.plot(df, type='line', ax=ax1, volume = ax8, xrotation=0, style='charles')#currently no way to add a legend that I can see
+    ax1.yaxis.set_ticks_position('left')
+    ax1.yaxis.set_label_position('left')
+    ax1.yaxis.label.set_color('white')
+    ax8.yaxis.label.set_color('white')
+    ax8.ticklabel_format(axis='y',style='scientific')
     del df
 
     
