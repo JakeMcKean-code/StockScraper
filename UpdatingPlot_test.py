@@ -137,12 +137,13 @@ def candle_ohlc(data: pd.DataFrame) -> list:
 def ax1_plotting(count: count) -> None:
     # clear current axis
     ax1.cla()
-    y_vals.append(list_of_rolling_averages[0]['open'][count+1])
-    ax1.plot(y_vals, label = 'Open Stock Price')
+    #y_vals.append(list_of_rolling_averages[0]['open'][count+1])
+    #ax1.plot(y_vals, label = 'Open Stock Price')
     #plotting the candlesticks
     #df = list_of_dfs[0]['price'].resample('1Min').ohlc()[:count+1]
     df = list_of_rolling_averages[0].drop(columns=['MA1', 'MA2', 'MA3'])[:count+1]
     mpf.plot(df, type='candle', ax=ax1, style=s, xrotation=0)
+    mpf.plot(df, type='line', ax=ax1, style=s, xrotation=0, label='Test')#currently no way to add a legend that I can see
     del df
 
     
