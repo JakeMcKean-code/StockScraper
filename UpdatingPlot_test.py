@@ -133,64 +133,67 @@ def candle_ohlc(data: pd.DataFrame) -> list:
         ohlc.append(append_me) # This is a list of tuples, each tuple is the ohlc info for the row in the resample
     return ohlc
 
-# Animation function
-def animate(i):
-    # count 1 up in the counter
-    count = next(counter)
+
+def ax1_plotting(count: count) -> None:
     # clear current axis
     ax1.cla()
-    # append timestamp to the x values and price to the y values
-    #x_vals.append(list_of_dfs[1].index[count])
-    #y_vals.append(list_of_dfs[1]['price'][count])
-    #x_vals.append(list_of_rolling_averages[1].index[count])
     y_vals.append(list_of_rolling_averages[0]['open'][count+1])
-    # plot the graph
-    #ax1.plot(x_vals,y_vals, label = 'Open Stock Price')
-    #print(x_vals)
-    #plt.xticks([])
+    ax1.plot(y_vals, label = 'Open Stock Price')
+    #plotting the candlesticks
+    #df = list_of_dfs[0]['price'].resample('1Min').ohlc()[:count+1]
+    df = list_of_rolling_averages[0].drop(columns=['MA1', 'MA2', 'MA3'])[:count+1]
+    mpf.plot(df, type='candle', ax=ax1, style=s, xrotation=0)
+    del df
+
+    
+    #ma1_vals.append(list_of_rolling_averages[0]['MA1'][count])
+    #ma2_vals.append(list_of_rolling_averages[0]['MA2'][count])
+    #ma3_vals.append(list_of_rolling_averages[0]['MA3'][count])
+    #ax1.plot(ma1_vals, color = 'orange',alpha=0.5, label = '1 Min Average')
+    #ax1.plot(x_vals,ma2_vals, color = 'brown',alpha=0.5, label = '2 Min Average')
+    #ax1.plot(x_vals,ma3_vals, color = 'blue',alpha=0.5, label = '3 Min Average')
 
     latest_price = list_of_rolling_averages[0]['open'][count+1]
-    latest_change = list_of_dfs[0]['change'][count]
-    
-
+    latest_change = list_of_dfs[0]['change'][count+1]
     #adds the stock code and the current price above the main plot in black font with a yellow background
     ax1.text(0.005,1.10, f'{list_of_codes[0]}: {latest_price}', transform=ax1.transAxes, color = 'black', fontsize = 18,
              fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
              bbox=dict(facecolor='#FFBF00'))
-    
     if str(latest_change)[0] == "-":
         colorcode = 'red'
     else:
         colorcode = '#18b800'
-
     #adds the latest change (from open) above the main plot in red for -ve change and green for +ve change
     ax1.text(0.8,1.10, latest_change, transform=ax1.transAxes, color = colorcode, fontsize = 18,
              fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
-    
     time_stamp  = datetime.datetime.now()
     time_stamp = time_stamp.strftime("%Y-%m-%d %H:%M:%S")
-    
     #adds the time stamp in the top right hand corner of the figure
     ax1.text(1.4,1.05,time_stamp,transform=ax1.transAxes, color = 'white', fontsize = 12,
              fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
     #adds a grid to the main plot
     ax1.grid(True, color = 'grey', linestyle = '-', which = 'major', axis = 'both',
              linewidth = 0.3)
-
-    #plotting the candlesticks
-    df = list_of_dfs[0]['price'].resample('1Min').ohlc()[:count+1]
-    mpf.plot(df, type='candle', ax=ax1, style=s)
-    del df
-    ax1.plot(y_vals, label = 'Open Stock Price')
-    
-    ma1_vals.append(list_of_rolling_averages[0]['MA1'][count])
-    ma2_vals.append(list_of_rolling_averages[0]['MA2'][count])
-    ma3_vals.append(list_of_rolling_averages[0]['MA3'][count])
-   # ax1.plot(x_vals,ma1_vals, color = 'orange',alpha=0.5, label = '1 Min Average')
-   # ax1.plot(x_vals,ma2_vals, color = 'brown',alpha=0.5, label = '2 Min Average')
-   # ax1.plot(x_vals,ma3_vals, color = 'blue',alpha=0.5, label = '3 Min Average')
     legend = ax1.legend(loc='upper left', facecolor = '#121416', fontsize = 10) 
     plt.setp(legend.get_texts(), color='w')
+
+# Animation function
+def animate(i):
+    # count 1 up in the counter
+    count = next(counter)
+    
+    # append timestamp to the x values and price to the y values
+    #x_vals.append(list_of_dfs[1].index[count])
+    #y_vals.append(list_of_dfs[1]['price'][count])
+    #x_vals.append(list_of_rolling_averages[1].index[count])
+    
+    # plot the graph
+    #ax1.plot(x_vals,y_vals, label = 'Open Stock Price')
+    #print(x_vals)
+    #plt.xticks([])
+
+    ax1_plotting(count)
+    
 
 
 
@@ -202,7 +205,6 @@ if __name__ == '__main__':
 
     #split into each stock code
     list_of_codes, list_of_dfs = split_dataframe_by_stockcode(df)
-
     list_of_latest_values: list = []
     list_of_candle_ohlc: list = []
     list_of_rolling_averages: list = []
