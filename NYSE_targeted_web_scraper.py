@@ -96,6 +96,12 @@ def run_scraping(file_name: str, run_time: int, sleep_time: int):
     loop_condition = False
     while loop_condition == False:
         stocks = input("Enter your stock codes separated by a space: ").split()
+
+        if len(stocks != 7):
+            print('Error: Please enter 7 stock codes to track.')
+            loop_condition = False
+            break
+        
         for element, stock in enumerate(stocks):
             if stock.upper() not in stock_codes:
                 print(f'ValueError: Code "{stock.upper()}" not found.')
