@@ -73,7 +73,7 @@ def preprocessing() -> pd.DataFrame:
     # Read in the dataframe and set the index and set the index to be a DatetimeIndex
     df = pd.read_csv('Test.csv', index_col = 'time', usecols = [0,2,3,4,5,6], names=['time','stock_code','price','change','percent change','volume'])
     remove_NAN(df) #remove any rows with NAN values that may exist
-    df.index = pd.to_datetime(df.index, format='%Y-%m-%d %H:%M:%S') # NOTE: Don't actually need this line 
+    df.index = pd.to_datetime(df.index, format='%Y-%m-%d %H:%M:%S')
     df.index = pd.DatetimeIndex(df.index)
     return df
 
@@ -146,6 +146,7 @@ def ax1_plotting(count: count, dataframe: pd.DataFrame, stock_code: str) -> None
 
     latest_price = dataframe['close'][count]
     latest_change = dataframe['change'][count]
+    time_stamp = str(dataframe.index.values[count]).replace('T', ' ')[:-10]#formats the time stamp to be in the format year-month-day hour:minute:second
     #adds the stock code and the current price above the main plot in black font with a yellow background
     ax1.text(0.005,1.10, f'{stock_code}: {latest_price}', transform=ax1.transAxes, color = 'black', fontsize = 18,
              fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
@@ -154,11 +155,14 @@ def ax1_plotting(count: count, dataframe: pd.DataFrame, stock_code: str) -> None
         colorcode = 'red'
     else:
         colorcode = '#18b800'
-    #adds the latest change (from open) above the main plot in red for -ve change and green for +ve change
-    ax1.text(0.8,1.10, latest_change, transform=ax1.transAxes, color = colorcode, fontsize = 18,
+    
+    ax1.text(0.5,1.10, f'Change from previous close:', transform=ax1.transAxes, color = 'white', fontsize = 18,
              fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
-    time_stamp  = datetime.datetime.now()
-    time_stamp = time_stamp.strftime("%Y-%m-%d %H:%M:%S")
+    #adds the latest change (from last close) above the main plot in red for -ve change and green for +ve change
+    ax1.text(0.8,1.10, latest_change, transform=ax1.transAxes, color = colorcode, fontsize = 18,
+             fontweight = 'bold', horizontalalignment='right',verticalalignment='center')
+
+
     #adds the time stamp in the top right hand corner of the figure
     ax1.text(1.4,1.05,time_stamp,transform=ax1.transAxes, color = 'white', fontsize = 12,
              fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
