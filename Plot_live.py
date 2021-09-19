@@ -146,7 +146,6 @@ def ax1_plotting(count: count, dataframe: pd.DataFrame, stock_code: str) -> None
 
     latest_price = dataframe['close'][count]
     latest_change = dataframe['change'][count]
-    time_stamp = str(dataframe.index.values[count]).replace('T', ' ')[:-10]#formats the time stamp to be in the format year-month-day hour:minute:second
     #adds the stock code and the current price above the main plot in black font with a yellow background
     ax1.text(0.005,1.10, f'{stock_code}: {latest_price}', transform=ax1.transAxes, color = 'black', fontsize = 18,
              fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
@@ -162,13 +161,14 @@ def ax1_plotting(count: count, dataframe: pd.DataFrame, stock_code: str) -> None
     ax1.text(0.8,1.10, latest_change, transform=ax1.transAxes, color = colorcode, fontsize = 18,
              fontweight = 'bold', horizontalalignment='right',verticalalignment='center')
 
-
+    time_stamp = str(dataframe.index.values[count]).replace('T', ' ')[:-10]#formats the time stamp to be in the format year-month-day hour:minute:second
     #adds the time stamp in the top right hand corner of the figure
     ax1.text(1.4,1.05,time_stamp,transform=ax1.transAxes, color = 'white', fontsize = 12,
              fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
     #adds a grid to the main plot
     ax1.grid(True, color = 'grey', linestyle = '-', which = 'major', axis = 'both',
              linewidth = 0.3)
+             
     '''legend = ax1.legend(loc='upper left', facecolor = '#121416', fontsize = 10) '''
     '''plt.setp(legend.get_texts(), color='w')'''
 
