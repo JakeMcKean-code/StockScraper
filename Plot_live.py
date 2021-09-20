@@ -49,16 +49,17 @@ ax7 = fig.add_subplot(gs[5,4:6])
 ax8 = fig.add_subplot(gs[4,0:4])
 ax9 = fig.add_subplot(gs[5,0:4])
 
-
-ax1 = graph_design(ax1)
-ax2 = graph_design(ax2)
-ax3 = graph_design(ax3)
-ax4 = graph_design(ax4)
-ax5 = graph_design(ax5)
-ax6 = graph_design(ax6)
-ax7 = graph_design(ax7)
-ax8 = graph_design(ax8)
-ax9 = graph_design(ax9)
+ax_list = []
+ax_list.append(graph_design(ax1))
+ax_list.append(graph_design(ax1))
+ax_list.append(graph_design(ax2))
+ax_list.append(graph_design(ax3))
+ax_list.append(graph_design(ax4))
+ax_list.append(graph_design(ax5))
+ax_list.append(graph_design(ax6))
+ax_list.append(graph_design(ax7))
+ax_list.append(graph_design(ax8))
+ax_list.append(graph_design(ax9))
 
 
 # -------------- Data functions ---------------------
@@ -123,8 +124,6 @@ def resample(df: pd.DataFrame) -> pd.DataFrame:
     data['volume'] = df['volume'].resample('1Min').mean() #adds the mean of the resampled volume values to the resampled dataframe
     remove_NAN(data)#removes NAN rows produced by rolling averages
     data['change'] = calculate_change_in_close(data['close']) #adds the mean of the resampled price change values to the resampled dataframe
-
-
     
     # Make the index column a datetime format for the graph
     data.index = pd.to_datetime(data.index, format='%Y-%m-%d %H:%M:%S')
@@ -209,9 +208,10 @@ def animate_live(i):
     
     ax1_plotting(count, resample(list_of_dfs[0]), list_of_codes[0])
     ax8_plotting()
-
-    side_panel_plotting(count, resample(list_of_dfs[1]), list_of_codes[1], ax2)
-    side_panel_plotting(count, resample(list_of_dfs[2]), list_of_codes[2], ax3)
+    for i in range(1,8):
+        side_panel_plotting(count, resample(list_of_dfs[i]), list_of_codes[i], ax_list[i])
+    #side_panel_plotting(count, resample(list_of_dfs[1]), list_of_codes[1], ax2)
+    #side_panel_plotting(count, resample(list_of_dfs[2]), list_of_codes[2], ax3)
     #side_panel_plotting(count, resample(list_of_dfs[3]), list_of_codes[3], ax4)
     #side_panel_plotting(count, resample(list_of_dfs[4]), list_of_codes[4], ax5)
     #side_panel_plotting(count, resample(list_of_dfs[5]), list_of_codes[5], ax6)
@@ -219,7 +219,7 @@ def animate_live(i):
 
 # -------------- Main ---------------------
 if __name__ == '__main__':
-    #run_scraping('InputTest', 60, 5) #runs the scraper and therefore makes the csv file    
+    run_scraping('InputTest', 60, 5) #runs the scraper and therefore makes the csv file    
 
     # ------------------------------------------------------------------------------------------------------------
     # Counter and x,y values for the graph

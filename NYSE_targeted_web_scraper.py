@@ -38,9 +38,10 @@ def soup_parser(exchange) -> BeautifulSoup:
         url: str = 'https://www.advfn.com/nyse/newyorkstockexchange.asp'
     elif exchange == "AMEX":
         url: str = 'https://www.advfn.com/amex/americanstockexchange.asp'
+    url = 'https://www.advfn.com/nyse/newyorkstockexchange.asp'
     page = requests.get(url)
     page_text: str = page.text #line not needed at the moment
-    soup = BeautifulSoup(page.text, 'html.parser')
+    soup = BeautifulSoup(page_text, 'html.parser')
     return soup
 
 def access_page_info(exchange) -> list:
@@ -97,7 +98,7 @@ def run_scraping(file_name: str, run_time: int, sleep_time: int):
     while loop_condition == False:
         stocks = input("Enter your stock codes separated by a space: ").split()
 
-        if len(stocks != 7):
+        if len(stocks) != 7:
             print('Error: Please enter 7 stock codes to track.')
             loop_condition = False
             break
