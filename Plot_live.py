@@ -208,8 +208,8 @@ def animate_live(i):
     
     ax1_plotting(count, resample(list_of_dfs[0]), list_of_codes[0])
     ax8_plotting()
-    for i in range(1,8):
-        side_panel_plotting(count, resample(list_of_dfs[i]), list_of_codes[i], ax_list[i])
+    for i in range(1,5):
+        side_panel_plotting(count, resample(list_of_dfs[i]), list_of_codes[i], ax_list[i+1])
     #side_panel_plotting(count, resample(list_of_dfs[1]), list_of_codes[1], ax2)
     #side_panel_plotting(count, resample(list_of_dfs[2]), list_of_codes[2], ax3)
     #side_panel_plotting(count, resample(list_of_dfs[3]), list_of_codes[3], ax4)
@@ -219,7 +219,7 @@ def animate_live(i):
 
 # -------------- Main ---------------------
 if __name__ == '__main__':
-    run_scraping('InputTest', 60, 5) #runs the scraper and therefore makes the csv file    
+    #run_scraping('InputTest', 60, 5) #runs the scraper and therefore makes the csv file    
 
     # ------------------------------------------------------------------------------------------------------------
     # Counter and x,y values for the graph
