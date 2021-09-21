@@ -72,7 +72,7 @@ def remove_NAN(df: pd.DataFrame):
 
 def preprocessing() -> pd.DataFrame:
     # Read in the dataframe and set the index and set the index to be a DatetimeIndex
-    df = pd.read_csv('Test.csv', index_col = 'time', usecols = [0,2,3,4,5,6], names=['time','stock_code','price','change','percent change','volume'])
+    df = pd.read_csv('21-09-2021.csv', index_col = 'time', usecols = [0,2,3,4,5,6], names=['time','stock_code','price','change','percent change','volume'])
     remove_NAN(df) #remove any rows with NAN values that may exist
     df.index = pd.to_datetime(df.index, format='%Y-%m-%d %H:%M:%S')
     df.index = pd.DatetimeIndex(df.index)
@@ -208,7 +208,7 @@ def animate_live(i):
     
     ax1_plotting(count, resample(list_of_dfs[0]), list_of_codes[0])
     ax8_plotting()
-    for i in range(1,5):
+    for i in range(1,len(list_of_dfs)):
         side_panel_plotting(count, resample(list_of_dfs[i]), list_of_codes[i], ax_list[i+1])
     #side_panel_plotting(count, resample(list_of_dfs[1]), list_of_codes[1], ax2)
     #side_panel_plotting(count, resample(list_of_dfs[2]), list_of_codes[2], ax3)

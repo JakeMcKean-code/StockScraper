@@ -38,7 +38,7 @@ def soup_parser(exchange) -> BeautifulSoup:
         url: str = 'https://www.advfn.com/nyse/newyorkstockexchange.asp'
     elif exchange == "AMEX":
         url: str = 'https://www.advfn.com/amex/americanstockexchange.asp'
-    url = 'https://www.advfn.com/nyse/newyorkstockexchange.asp'
+    #url = 'https://www.advfn.com/nyse/newyorkstockexchange.asp'
     page = requests.get(url)
     page_text: str = page.text #line not needed at the moment
     soup = BeautifulSoup(page_text, 'html.parser')
