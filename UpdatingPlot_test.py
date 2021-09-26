@@ -27,6 +27,15 @@ mc = mpf.make_marketcolors(
 s  = mpf.make_mpf_style(marketcolors=mc)
 
 # -------------- Create figure and subplots ---------------------
+def graph_design(ax):
+    ax.set_facecolor('#091217')
+    ax.tick_params(axis="both", labelsize=8, colors='white')
+    ax.ticklabel_format(useOffset=False)
+    ax.spines['bottom'].set_color('#808080')
+    ax.spines['top'].set_color('#808080')
+    ax.spines['left'].set_color('#808080')
+    ax.spines['right'].set_color('#808080')
+    return ax
 
 fig = plt.figure()
 fig.patch.set_facecolor('#121416')
@@ -41,25 +50,17 @@ ax7 = fig.add_subplot(gs[5,4:6])
 ax8 = fig.add_subplot(gs[4,0:4])
 ax9 = fig.add_subplot(gs[5,0:4])
 
-def graph_design(ax):
-    ax.set_facecolor('#091217')
-    ax.tick_params(axis="both", labelsize=8, colors='white')
-    ax.ticklabel_format(useOffset=False)
-    ax.spines['bottom'].set_color('#808080')
-    ax.spines['top'].set_color('#808080')
-    ax.spines['left'].set_color('#808080')
-    ax.spines['right'].set_color('#808080')
-    return ax
-
-ax1 = graph_design(ax1)
-ax2 = graph_design(ax2)
-ax3 = graph_design(ax3)
-ax4 = graph_design(ax4)
-ax5 = graph_design(ax5)
-ax6 = graph_design(ax6)
-ax7 = graph_design(ax7)
-ax8 = graph_design(ax8)
-ax9 = graph_design(ax9)
+ax_list = []
+ax_list.append(graph_design(ax1))
+ax_list.append(graph_design(ax1))
+ax_list.append(graph_design(ax2))
+ax_list.append(graph_design(ax3))
+ax_list.append(graph_design(ax4))
+ax_list.append(graph_design(ax5))
+ax_list.append(graph_design(ax6))
+ax_list.append(graph_design(ax7))
+ax_list.append(graph_design(ax8))
+ax_list.append(graph_design(ax9))
 
 
 # -------------- Data functions ---------------------
@@ -72,7 +73,7 @@ def remove_NAN(df: pd.DataFrame):
 
 def preprocessing() -> pd.DataFrame:
     # Read in the dataframe and set the index and set the index to be a DatetimeIndex
-    df = pd.read_csv('Test.csv', index_col = 'time',usecols = [0,2,3,4,5,6],names=['time','stock_code','price','change','percent change','volume'])
+    df = pd.read_csv('21-09-2021.csv', index_col = 'time',usecols = [0,2,3,4,5,6],names=['time','stock_code','price','change','percent change','volume'])
     remove_NAN(df) #remove any rows with NAN values that may exist
     df.index = pd.to_datetime(df.index, format='%Y-%m-%d %H:%M:%S') # NOTE: Don't actually need this line 
     df.index = pd.DatetimeIndex(df.index)
@@ -105,7 +106,29 @@ def split_dataframe_by_stockcode(df: pd.DataFrame) -> list:
         list_of_dataframes.append(df_code)
     return list_of_codes, list_of_dataframes
 
+def calculate_change_in_close(closes: list) -> list:
+    #changes = np.arange(0, len(closes), 1)
+    changes = []
+    for elem, current_close_val in enumerate(closes):
+        previous_close_val = closes[elem-1]
+        if elem == 0:#sets the first change to 0 since no previous close values exist
+            changes.append(0)
+        else:
+            changes.append( round(current_close_val - previous_close_val, 2) )
+    return changes
 
+def resample(df: pd.DataFrame) -> pd.DataFrame:
+    # Resample data to get the ohlc candlestick format
+    data = df['price'].resample('1Min').ohlc()
+    data['volume'] = df['volume'].resample('1Min').mean() #adds the mean of the resampled volume values to the resampled dataframe
+    remove_NAN(data)#removes NAN rows produced by rolling averages
+    data['change'] = calculate_change_in_close(data['close']) #adds the mean of the resampled price change values to the resampled dataframe
+    
+    # Make the index column a datetime format for the graph
+    data.index = pd.to_datetime(data.index, format='%Y-%m-%d %H:%M:%S')
+    return data
+
+"""
 def resample_and_rolling(df: pd.DataFrame) -> pd.DataFrame:
     # Resample data to get the ohlc candlestick format
     data = df['price'].resample('1Min').ohlc()
@@ -134,26 +157,33 @@ def candle_ohlc(data: pd.DataFrame) -> list:
                 data['close'][candle]
         ohlc.append(append_me) # This is a list of tuples, each tuple is the ohlc info for the row in the resample
     return ohlc
+"""
 
-
-def ax1_plotting(count: count) -> None:
+def ax1_plotting(count: count, dataframe: pd.DataFrame, stock_code: str) -> None:
     # clear current axis
     ax1.cla()
     #y_vals.append(list_of_rolling_averages[0]['open'][count+1])
     #ax1.plot(y_vals, label = 'Open Stock Price')
     #plotting the candlesticks
     #df = list_of_dfs[0]['price'].resample('1Min').ohlc()[:count+1]
-    df = list_of_rolling_averages[0].drop(columns=['MA1', 'MA2', 'MA3'])[:count+1]
-    print(df)
-    mpf.plot(df, type='candle',  ax=ax1, style=s, xrotation=0)
-    mpf.plot(df, type='line', ax=ax1, volume = ax8, xrotation=0, style='charles')#currently no way to add a legend that I can see
-    ax1.yaxis.set_ticks_position('left')
-    ax1.yaxis.set_label_position('left')
-    ax1.yaxis.label.set_color('white')
-    ax8.yaxis.label.set_color('white')
-    ax8.ticklabel_format(axis='y',style='scientific')
-    del df
 
+    # Makes a "queue" system for plotting, only shows 10 points at a time
+    if (count<10):
+        df = dataframe.drop(columns=['change'])[:count+1]
+        mpf.plot(df, type='candle',  ax=ax1, style=s, xrotation=0)
+        mpf.plot(df, type='line', ax=ax1, volume = ax8, xrotation=0, style='charles')#currently no way to add a legend that I can see
+        ax1.yaxis.set_ticks_position('left')
+        ax1.yaxis.set_label_position('left')
+        ax1.yaxis.label.set_color('white')
+        del df
+    else:
+        df = dataframe.drop(columns=['change'])[count-10:count+1]
+        mpf.plot(df, type='candle',  ax=ax1, style=s, xrotation=0)
+        mpf.plot(df, type='line', ax=ax1, volume = ax8, xrotation=0, style='charles')#currently no way to add a legend that I can see
+        ax1.yaxis.set_ticks_position('left')
+        ax1.yaxis.set_label_position('left')
+        ax1.yaxis.label.set_color('white')
+        del df
     
     #ma1_vals.append(list_of_rolling_averages[0]['MA1'][count])
     #ma2_vals.append(list_of_rolling_averages[0]['MA2'][count])
@@ -162,10 +192,10 @@ def ax1_plotting(count: count) -> None:
     #ax1.plot(x_vals,ma2_vals, color = 'brown',alpha=0.5, label = '2 Min Average')
     #ax1.plot(x_vals,ma3_vals, color = 'blue',alpha=0.5, label = '3 Min Average')
 
-    latest_price = list_of_rolling_averages[0]['close'][count+1]
-    latest_change = list_of_dfs[0]['change'][count+1]
+    latest_price = dataframe['close'][count]
+    latest_change = dataframe['change'][count]
     #adds the stock code and the current price above the main plot in black font with a yellow background
-    ax1.text(0.005,1.10, f'{list_of_codes[0]}: {latest_price}', transform=ax1.transAxes, color = 'black', fontsize = 18,
+    ax1.text(0.005,1.10, f'{stock_code}: {latest_price}', transform=ax1.transAxes, color = 'black', fontsize = 18,
              fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
              bbox=dict(facecolor='#FFBF00'))
     if str(latest_change)[0] == "-":
@@ -173,7 +203,7 @@ def ax1_plotting(count: count) -> None:
     else:
         colorcode = '#18b800'
     #adds the latest change (from open) above the main plot in red for -ve change and green for +ve change
-    ax1.text(0.8,1.10, latest_change, transform=ax1.transAxes, color = colorcode, fontsize = 18,
+    ax1.text(0.8,1.10, f' change: {latest_change}', transform=ax1.transAxes, color = colorcode, fontsize = 10,
              fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
     time_stamp  = datetime.datetime.now()
     time_stamp = time_stamp.strftime("%Y-%m-%d %H:%M:%S")
@@ -183,13 +213,71 @@ def ax1_plotting(count: count) -> None:
     #adds a grid to the main plot
     ax1.grid(True, color = 'grey', linestyle = '-', which = 'major', axis = 'both',
              linewidth = 0.3)
+    ''' 
     legend = ax1.legend(loc='upper left', facecolor = '#121416', fontsize = 10) 
-    plt.setp(legend.get_texts(), color='w')
+    plt.setp(legend.get_texts(), color='w')'''
+
+def ax9_plotting(count: count, dataframe: pd.DataFrame, stock_code: str) -> None:
+    ax9.cla()
+    df = dataframe.drop(columns=['change'])[:count+1]
+    mpf.plot(df, type='line', ax=ax9, xrotation=0, style='charles')#currently no way to add a legend that I can see
+    ax9.yaxis.set_ticks_position('left')
+    ax9.yaxis.set_label_position('left')
+    ax9.yaxis.label.set_color('white')
+    del df
+
+    ax9.text(0.005,-1.3, f'{stock_code}: Full history', transform=ax9.transAxes, color = 'black', fontsize = 13,
+             fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
+             bbox=dict(facecolor='#FFBF00'))
+
+
+def side_panel_plotting(count: count, dataframe: pd.DataFrame, stock_code: str, axis) -> None:
+    # clear current axis
+    axis.cla()
+    
+    if (count<10):
+        df = dataframe.drop(columns=['change', 'volume'])[:count+1]
+        mpf.plot(df, type='candle',  ax=axis, style=s, xrotation=0)
+        mpf.plot(df, type='line', ax=axis, xrotation=0)#currently no way to add a legend that I can see
+        axis.yaxis.set_ticks_position('left')
+        axis.yaxis.set_label_position('left')
+        axis.yaxis.label.set_color('white')
+        del df
+    else:
+        df = dataframe.drop(columns=['change', 'volume'])[count-10:count+1]
+        mpf.plot(df, type='candle',  ax=axis, style=s, xrotation=0)
+        mpf.plot(df, type='line', ax=axis, xrotation=0)#currently no way to add a legend that I can see
+        axis.yaxis.set_ticks_position('left')
+        axis.yaxis.set_label_position('left')
+        axis.yaxis.label.set_color('white')
+        del df
+    
+    axis.text(1.2,0.5, f'{stock_code}', transform=axis.transAxes, color = 'black', fontsize = 12,
+             fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
+             bbox=dict(facecolor='#FFBF00'))
+    axis.grid(True, color = 'grey', linestyle = '-', which = 'major', axis = 'both',
+             linewidth = 0.3)
+
+def ax8_plotting():
+    ax8.yaxis.label.set_color('white')
+    ax8.ticklabel_format(axis='y',style='scientific')
+
 
 # Animation function
 def animate(i):
+    df = preprocessing()
+
+    #split into each stock code
+    list_of_codes, list_of_dfs = split_dataframe_by_stockcode(df)
+
     # count 1 up in the counter
     count = next(counter)
+    
+    ax1_plotting(count, resample(list_of_dfs[0]), list_of_codes[0])
+    ax9_plotting(count, resample(list_of_dfs[0]), list_of_codes[0])
+    ax8_plotting()
+    for i in range(1,len(list_of_dfs)):
+        side_panel_plotting(count, resample(list_of_dfs[i]), list_of_codes[i], ax_list[i+1])
     
     # append timestamp to the x values and price to the y values
     #x_vals.append(list_of_dfs[1].index[count])
@@ -201,42 +289,20 @@ def animate(i):
     #print(x_vals)
     #plt.xticks([])
 
-    ax1_plotting(count)
-    
-
-
-
 # -------------- Main ---------------------
 if __name__ == '__main__':
     #run_scraping('InputTest', 60, 5) #runs the scraper and therefore makes the csv file
 
-    df = preprocessing()
-
-    #split into each stock code
-    list_of_codes, list_of_dfs = split_dataframe_by_stockcode(df)
-    list_of_latest_values: list = []
-    list_of_candle_ohlc: list = []
-    list_of_rolling_averages: list = []
-    
-    for dataframe in list_of_dfs:
-        list_of_latest_values = list(latest_values(dataframe))
-        list_of_candle_ohlc.append( candle_ohlc( resample_and_rolling(dataframe) ) )
-        list_of_rolling_averages.append( resample_and_rolling( dataframe))
-    
+     #run_scraping('InputTest', 60, 5) #runs the scraper and therefore makes the csv file    
 
     # ------------------------------------------------------------------------------------------------------------
     # Counter and x,y values for the graph
     counter = count() # Just counts up one number at a time
-    x_vals = list() # empty list for the x and y vals
-    y_vals = list()
-    ma1_vals = list()
-    ma2_vals = list()
-    ma3_vals = list()
 
     # ani function that draws to gcf (get current figure), uses the animate function for its animation and updates at an interval of 1000ms
     ani = FuncAnimation(fig, animate, interval = 1000)
     
     #manager = plt.get_current_fig_manager()
     #manager.full_screen_toggle()
-
+    plt.tight_layout(pad=4, w_pad=0.1, h_pad=0.1)
     plt.show()
