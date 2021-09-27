@@ -37,7 +37,7 @@ def graph_design(ax):
     ax.spines['right'].set_color('#808080')
     return ax
 
-fig = plt.figure()
+fig = plt.figure(figsize=(11,8))
 fig.patch.set_facecolor('#121416')
 gs = fig.add_gridspec(6,6)
 ax1 = fig.add_subplot(gs[0:4,0:4])
@@ -203,12 +203,12 @@ def ax1_plotting(count: count, dataframe: pd.DataFrame, stock_code: str) -> None
     else:
         colorcode = '#18b800'
     #adds the latest change (from open) above the main plot in red for -ve change and green for +ve change
-    ax1.text(0.8,1.10, f' change: {latest_change}', transform=ax1.transAxes, color = colorcode, fontsize = 10,
+    ax1.text(0.8,1.10, f'AAPL Latest Change: {latest_change}', transform=ax1.transAxes, color = colorcode, fontsize = 10,
              fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
     time_stamp  = datetime.datetime.now()
     time_stamp = time_stamp.strftime("%Y-%m-%d %H:%M:%S")
     #adds the time stamp in the top right hand corner of the figure
-    ax1.text(1.4,1.05,time_stamp,transform=ax1.transAxes, color = 'white', fontsize = 12,
+    ax1.text(1.4,1.05,time_stamp,transform=ax1.transAxes, color = 'white', fontsize = 15,
              fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
     #adds a grid to the main plot
     ax1.grid(True, color = 'grey', linestyle = '-', which = 'major', axis = 'both',
@@ -226,7 +226,7 @@ def ax9_plotting(count: count, dataframe: pd.DataFrame, stock_code: str) -> None
     ax9.yaxis.label.set_color('white')
     del df
 
-    ax9.text(0.005,-1.3, f'{stock_code}: Full history', transform=ax9.transAxes, color = 'black', fontsize = 13,
+    ax9.text(0.005,-0.8, f'{stock_code}: Full history', transform=ax9.transAxes, color = 'black', fontsize = 13,
              fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
              bbox=dict(facecolor='#FFBF00'))
 
@@ -239,20 +239,20 @@ def side_panel_plotting(count: count, dataframe: pd.DataFrame, stock_code: str, 
         df = dataframe.drop(columns=['change', 'volume'])[:count+1]
         mpf.plot(df, type='candle',  ax=axis, style=s, xrotation=0)
         mpf.plot(df, type='line', ax=axis, xrotation=0)#currently no way to add a legend that I can see
-        axis.yaxis.set_ticks_position('left')
-        axis.yaxis.set_label_position('left')
+        axis.yaxis.set_ticks_position('right')
+        axis.yaxis.set_label_position('right')
         axis.yaxis.label.set_color('white')
         del df
     else:
         df = dataframe.drop(columns=['change', 'volume'])[count-10:count+1]
         mpf.plot(df, type='candle',  ax=axis, style=s, xrotation=0)
         mpf.plot(df, type='line', ax=axis, xrotation=0)#currently no way to add a legend that I can see
-        axis.yaxis.set_ticks_position('left')
-        axis.yaxis.set_label_position('left')
+        axis.yaxis.set_ticks_position('right')
+        axis.yaxis.set_label_position('right')
         axis.yaxis.label.set_color('white')
         del df
     
-    axis.text(1.2,0.5, f'{stock_code}', transform=axis.transAxes, color = 'black', fontsize = 12,
+    axis.text(1.3,0.8, f'{stock_code}', transform=axis.transAxes, color = 'black', fontsize = 12,
              fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
              bbox=dict(facecolor='#FFBF00'))
     axis.grid(True, color = 'grey', linestyle = '-', which = 'major', axis = 'both',
@@ -304,5 +304,5 @@ if __name__ == '__main__':
     
     #manager = plt.get_current_fig_manager()
     #manager.full_screen_toggle()
-    plt.tight_layout(pad=4, w_pad=0.1, h_pad=0.1)
+    plt.tight_layout(pad=10, w_pad=0.1, h_pad=0.1)
     plt.show()
