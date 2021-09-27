@@ -32,13 +32,13 @@ def get_stock_codes(page_info) -> None:
     return list_of_codes
 
 def soup_parser(exchange) -> BeautifulSoup:
-    if exchange == "NASDAQ":
+    if (exchange == "NASDAQ"):
         url: str = 'https://www.advfn.com/nasdaq/nasdaq.asp'
-    elif exchange == "NYSE":
+    elif (exchange == "NYSE"):
         url: str = 'https://www.advfn.com/nyse/newyorkstockexchange.asp'
-    elif exchange == "AMEX":
+    elif (exchange == "AMEX"):
         url: str = 'https://www.advfn.com/amex/americanstockexchange.asp'
-    #url = 'https://www.advfn.com/nyse/newyorkstockexchange.asp'
+    url = 'https://www.advfn.com/nyse/newyorkstockexchange.asp'
     page = requests.get(url)
     page_text: str = page.text #line not needed at the moment
     soup = BeautifulSoup(page_text, 'html.parser')
@@ -84,33 +84,38 @@ def create_csv(file_name: str, exchange, stock_list, interupt_time, interval_tim
         current_time = time.time()
 
 
-def run_scraping(file_name: str, run_time: int, sleep_time: int):
-    stock_codes: list = []
-    loop_condition: bool = False
-    while loop_condition == False:
-        exchange = input("Enter exchange (Allowed exchanges are: NASDAQ, NYSE, AMEX): ")
-        if(check_exchange(exchange.upper()) == True):
-            loop_condition = True
-            page_info = access_page_info(exchange.upper())
-            stock_codes = get_stock_codes(page_info)
+def run_scraping(file_name: str, run_time: int, sleep_time: int, exchange: str, stocks: list, first_time: bool = True):
+    if (first_time==True):
+        stock_codes: list = []
+        loop_condition: bool = False
+        while loop_condition == False:
+            exchange = input("Enter exchange (Allowed exchanges are: NASDAQ, NYSE, AMEX): ")
+            if(check_exchange(exchange.upper()) == True):
+                loop_condition = True
+                page_info = access_page_info(exchange.upper())
+                stock_codes = get_stock_codes(page_info)
 
-    loop_condition = False
-    while loop_condition == False:
-        stocks = input("Enter your stock codes separated by a space: ").split()
+        loop_condition = False
+        while loop_condition == False:
+            stocks = input("Enter your stock codes separated by a space: ").split()
 
-        if len(stocks) != 7:
-            print('Error: Please enter 7 stock codes to track.')
-            loop_condition = False
-            break
-        
-        for element, stock in enumerate(stocks):
-            if stock.upper() not in stock_codes:
-                print(f'ValueError: Code "{stock.upper()}" not found.')
+            if len(stocks) != 7:
+                print('Error: Please enter 7 stock codes to track.')
                 loop_condition = False
                 break
-            else:
-                loop_condition = True
-                stocks[element] = stock.upper()
-    print(f'Using stock codes: {stocks}.')
+            
+            for element, stock in enumerate(stocks):
+                if stock.upper() not in stock_codes:
+                    print(f'ValueError: Code "{stock.upper()}" not found.')
+                    loop_condition = False
+                    break
+                else:
+                    loop_condition = True
+                    stocks[element] = stock.upper()
+        print(f'Using stock codes: {stocks}.')
 
-    create_csv(file_name, exchange, stocks, run_time, sleep_time)
+        create_csv(file_name, exchange, stocks, run_time, sleep_time)
+        return exchange, stocks
+    else:
+        create_csv(file_name, exchange, stocks, run_time, sleep_time)
+        return exchange, stocks

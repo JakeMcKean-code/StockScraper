@@ -17,7 +17,6 @@ from matplotlib.animation import FuncAnimation
 import datetime
 from pandas.core.frame import DataFrame
 from matplotlib.gridspec import GridSpec
-#from mplfinance.original_flavor import candlestick_ochl
 import mplfinance as mpf
 
 mc = mpf.make_marketcolors(up='#18b800',down='#ff3503',
@@ -36,7 +35,7 @@ def graph_design(ax):
     ax.spines['right'].set_color('#808080')
     return ax
 
-fig = plt.figure()
+fig = plt.figure(figsize=(11,8))
 fig.patch.set_facecolor('#121416')
 gs = fig.add_gridspec(6,6)
 ax1 = fig.add_subplot(gs[0:4,0:4])
@@ -72,7 +71,7 @@ def remove_NAN(df: pd.DataFrame):
 
 def preprocessing() -> pd.DataFrame:
     # Read in the dataframe and set the index and set the index to be a DatetimeIndex
-    df = pd.read_csv('21-09-2021.csv', index_col = 'time', usecols = [0,2,3,4,5,6], names=['time','stock_code','price','change','percent change','volume'])
+    df = pd.read_csv('InputTest.csv', index_col = 'time', usecols = [0,2,3,4,5,6], names=['time','stock_code','price','change','percent change','volume'])
     remove_NAN(df) #remove any rows with NAN values that may exist
     df.index = pd.to_datetime(df.index, format='%Y-%m-%d %H:%M:%S')
     df.index = pd.DatetimeIndex(df.index)
@@ -129,93 +128,140 @@ def resample(df: pd.DataFrame) -> pd.DataFrame:
     data.index = pd.to_datetime(data.index, format='%Y-%m-%d %H:%M:%S')
     return data
 
-
+# Function to specify the plotting of ax1
 def ax1_plotting(count: count, dataframe: pd.DataFrame, stock_code: str) -> None:
     # clear current axis
     ax1.cla()
-    
+    # Makes the plots
     df = dataframe.drop(columns=['change'])[:count+1]
     mpf.plot(df, type='candle',  ax=ax1, style=s, xrotation=0)
-    mpf.plot(df, type='line', ax=ax1, volume = ax8, xrotation=0, style='charles')#currently no way to add a legend that I can see
+    mpf.plot(df, type='line', ax=ax1, volume = ax8, xrotation=0, style='charles')
     ax1.yaxis.set_ticks_position('left')
     ax1.yaxis.set_label_position('left')
     ax1.yaxis.label.set_color('white')
     del df
+   
 
-
+    # Get the latest price and latest change for that specific stock
     latest_price = dataframe['close'][count]
     latest_change = dataframe['change'][count]
-    #adds the stock code and the current price above the main plot in black font with a yellow background
+
+    # Adds the stock code and the current price above the main plot in black font with a yellow background
     ax1.text(0.005,1.10, f'{stock_code}: {latest_price}', transform=ax1.transAxes, color = 'black', fontsize = 18,
              fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
              bbox=dict(facecolor='#FFBF00'))
+
+    # Specifies the colour of the latest_change font depending on the value
     if str(latest_change)[0] == "-":
         colorcode = 'red'
     else:
         colorcode = '#18b800'
-    
-    ax1.text(0.5,1.10, f'Change from previous close:', transform=ax1.transAxes, color = 'white', fontsize = 18,
-             fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
-    #adds the latest change (from last close) above the main plot in red for -ve change and green for +ve change
-    ax1.text(0.8,1.10, latest_change, transform=ax1.transAxes, color = colorcode, fontsize = 18,
-             fontweight = 'bold', horizontalalignment='right',verticalalignment='center')
 
-    time_stamp = str(dataframe.index.values[count]).replace('T', ' ')[:-10]#formats the time stamp to be in the format year-month-day hour:minute:second
-    #adds the time stamp in the top right hand corner of the figure
-    ax1.text(1.4,1.05,time_stamp,transform=ax1.transAxes, color = 'white', fontsize = 12,
+    # Adds the latest change (from close) above the main plot in red for -ve change and green for +ve change
+    ax1.text(0.8,1.10, f'AAPL Latest Change: {latest_change}', transform=ax1.transAxes, color = colorcode, fontsize = 10,
              fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
-    #adds a grid to the main plot
+
+    # Get a timestamp
+    time_stamp  = datetime.datetime.now()
+    time_stamp = time_stamp.strftime("%Y-%m-%d %H:%M:%S")
+
+    # Adds the time stamp in the top right hand corner of the figure
+    ax1.text(1.4,1.05,time_stamp,transform=ax1.transAxes, color = 'white', fontsize = 15,
+             fontweight = 'bold', horizontalalignment='center',verticalalignment='center')
+
+    # Adds a grid to the main plot
     ax1.grid(True, color = 'grey', linestyle = '-', which = 'major', axis = 'both',
              linewidth = 0.3)
-             
-    '''legend = ax1.legend(loc='upper left', facecolor = '#121416', fontsize = 10) '''
-    '''plt.setp(legend.get_texts(), color='w')'''
+    
+# Function to specify the ax9 plotting
+def ax9_plotting(count: count, dataframe: pd.DataFrame, stock_code: str) -> None:
+    ax9.cla()
+    # "Queue" system for only showing 10 points at a time
+    if (count<10):
+        df = dataframe.drop(columns=['change'])[:count+1]
+        mpf.plot(df, type='candle',  ax=ax9, style=s, xrotation=0)
+        mpf.plot(df, type='line', ax=ax9, xrotation=0, style='charles')
+        ax9.yaxis.set_ticks_position('left')
+        ax9.yaxis.set_label_position('left')
+        ax9.yaxis.label.set_color('white')
+        del df
+    else:
+        df = dataframe.drop(columns=['change'])[count-10:count+1]
+        mpf.plot(df, type='candle',  ax=ax9, style=s, xrotation=0)
+        mpf.plot(df, type='line', ax=ax9, xrotation=0, style='charles')
+        ax9.yaxis.set_ticks_position('left')
+        ax9.yaxis.set_label_position('left')
+        ax9.yaxis.label.set_color('white')
+        del df
+    ax9.text(0.005,-0.8, f'{stock_code}: Full history', transform=ax9.transAxes, color = 'black', fontsize = 13,
+             fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
+             bbox=dict(facecolor='#FFBF00'))
 
-
+# Function to specify the plotting of the side panel plots
 def side_panel_plotting(count: count, dataframe: pd.DataFrame, stock_code: str, axis) -> None:
-    # clear current axis
+    # Clear current axis
     axis.cla()
+    # "Queue" system for only showing 10 points at a time
+    if (count<10):
+        df = dataframe.drop(columns=['change', 'volume'])[:count+1]
+        mpf.plot(df, type='candle',  ax=axis, style=s, xrotation=0)
+        mpf.plot(df, type='line', ax=axis, xrotation=0)
+        axis.yaxis.set_ticks_position('right')
+        axis.yaxis.set_label_position('right')
+        axis.yaxis.label.set_color('white')
+        del df
+    else:
+        df = dataframe.drop(columns=['change', 'volume'])[count-10:count+1]
+        mpf.plot(df, type='candle',  ax=axis, style=s, xrotation=0)
+        mpf.plot(df, type='line', ax=axis, xrotation=0)
+        axis.yaxis.set_ticks_position('right')
+        axis.yaxis.set_label_position('right')
+        axis.yaxis.label.set_color('white')
+        del df
     
-    df = dataframe.drop(columns=['change', 'volume'])[:count+1]
-    mpf.plot(df, type='candle',  ax=axis, style=s, xrotation=0)
-    mpf.plot(df, type='line', ax=axis, xrotation=0)#currently no way to add a legend that I can see
-    axis.yaxis.set_ticks_position('left')
-    axis.yaxis.set_label_position('left')
-    axis.yaxis.label.set_color('white')
-    del df
-    
-    axis.text(1.02,0.5, f'{stock_code}', transform=axis.transAxes, color = 'black', fontsize = 18,
+    # Text for the side panel plots
+    axis.text(1.3,0.8, f'{stock_code}', transform=axis.transAxes, color = 'black', fontsize = 12,
              fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
              bbox=dict(facecolor='#FFBF00'))
     axis.grid(True, color = 'grey', linestyle = '-', which = 'major', axis = 'both',
              linewidth = 0.3)
-    
 
-
+# Function to control the aesthetics of the ax8 volume plot
 def ax8_plotting():
     ax8.yaxis.label.set_color('white')
     ax8.ticklabel_format(axis='y',style='scientific')
-
 # Animation function
 def animate_live(i):
-    df = preprocessing()
-
-    #split into each stock code
-    list_of_codes, list_of_dfs = split_dataframe_by_stockcode(df)
-
     # count 1 up in the counter
     count = next(counter)
+    if(count == 0):
+        exchange, stocks = run_scraping('InputTest', 60, 5, "nyse", [])
+        info.append(exchange)
+        info.append(stocks)
+        df = preprocessing()
+
+        #split into each stock code
+        list_of_codes, list_of_dfs = split_dataframe_by_stockcode(df)
+        ax1_plotting(count, resample(list_of_dfs[0]), list_of_codes[0])
+        ax9_plotting(count, resample(list_of_dfs[0]), list_of_codes[0])
+        ax8_plotting()
+        for i in range(1,len(list_of_dfs)):
+            side_panel_plotting(count, resample(list_of_dfs[i]), list_of_codes[i], ax_list[i+1])
+
+    else:
+        run_scraping('InputTest', 60, 5, info[0], info[1], False)
+        df = preprocessing()
+
+        #split into each stock code
+        list_of_codes, list_of_dfs = split_dataframe_by_stockcode(df)
+
+        
+        ax1_plotting(count, resample(list_of_dfs[0]), list_of_codes[0])
+        ax9_plotting(count, resample(list_of_dfs[0]), list_of_codes[0])
+        ax8_plotting()
+        for i in range(1,len(list_of_dfs)):
+            side_panel_plotting(count, resample(list_of_dfs[i]), list_of_codes[i], ax_list[i+1])
     
-    ax1_plotting(count, resample(list_of_dfs[0]), list_of_codes[0])
-    ax8_plotting()
-    for i in range(1,len(list_of_dfs)):
-        side_panel_plotting(count, resample(list_of_dfs[i]), list_of_codes[i], ax_list[i+1])
-    #side_panel_plotting(count, resample(list_of_dfs[1]), list_of_codes[1], ax2)
-    #side_panel_plotting(count, resample(list_of_dfs[2]), list_of_codes[2], ax3)
-    #side_panel_plotting(count, resample(list_of_dfs[3]), list_of_codes[3], ax4)
-    #side_panel_plotting(count, resample(list_of_dfs[4]), list_of_codes[4], ax5)
-    #side_panel_plotting(count, resample(list_of_dfs[5]), list_of_codes[5], ax6)
-    #side_panel_plotting(count, resample(list_of_dfs[6]), list_of_codes[6], ax7)
 
 # -------------- Main ---------------------
 if __name__ == '__main__':
@@ -224,11 +270,9 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------------------------------------------------
     # Counter and x,y values for the graph
     counter = count() # Just counts up one number at a time
-
+    info = [] # Store the exchange and the stock codes from the first scraping
     # ani function that draws to gcf (get current figure), uses the animate function for its animation and updates at an interval of 1000ms
     ani = FuncAnimation(fig, animate_live, interval = 1000)
     
-    #manager = plt.get_current_fig_manager()
-    #manager.full_screen_toggle()
-    plt.tight_layout(pad=4, w_pad=0.1, h_pad=0.1)
+    plt.tight_layout(pad=10, w_pad=0.1, h_pad=0.1)
     plt.show()
