@@ -2,7 +2,7 @@
 """
 Created on Sat Sep  4 12:25:25 2021
 
-@author: Jake McKean
+@author: Jake McKean & nathan Davies
 """
 # Import scraing tool as a module
 from matplotlib import axes
@@ -24,7 +24,7 @@ mc = mpf.make_marketcolors(up='#18b800',down='#ff3503',
                         )
 s  = mpf.make_mpf_style(marketcolors=mc)
 
-# -------------- Create figure and subplots ---------------------
+# -------------------------------------- Create figure and subplots --------------------------------------
 def graph_design(ax):
     ax.set_facecolor('#091217')
     ax.tick_params(axis="both", labelsize=8, colors='white')
@@ -61,11 +61,11 @@ ax_list.append(graph_design(ax8))
 ax_list.append(graph_design(ax9))
 
 
-# -------------- Data functions ---------------------
+# -------------------------------------- Data functions --------------------------------------
 
 def remove_NAN(df: pd.DataFrame):
     #Check if any nan values remain in the dataframe, if so delete the rows and reset the indiices
-    if df.isnull().sum().sum() != 0:
+    if (df.isnull().sum().sum() != 0):
         df.dropna(inplace=True)
 
 
@@ -89,7 +89,7 @@ def latest_values(df: pd.DataFrame) -> list:
 
 # Function to convert a string to a float 
 def str_to_num(df: pd.DataFrame, column: str) -> pd.DataFrame:
-    if(isinstance(df.iloc[0,df.columns.get_loc(column)], str)):
+    if (isinstance(df.iloc[0,df.columns.get_loc(column)], str)):
         df[column] = df[column].str.replace(',','')
         df[column] = df[column].astype(float)
     return df
@@ -110,7 +110,7 @@ def calculate_change_in_close(closes: list) -> list:
     changes = []
     for elem, current_close_val in enumerate(closes):
         previous_close_val = closes[elem-1]
-        if elem == 0:#sets the first change to 0 since no previous close values exist
+        if (elem == 0):#sets the first change to 0 since no previous close values exist
             changes.append(0)
         else:
             changes.append( round(current_close_val - previous_close_val, 2) )
@@ -128,6 +128,7 @@ def resample(df: pd.DataFrame) -> pd.DataFrame:
     data.index = pd.to_datetime(data.index, format='%Y-%m-%d %H:%M:%S')
     return data
 
+# -------------------------------------- Plotting functions --------------------------------------
 # Function to specify the plotting of ax1
 def ax1_plotting(count: count, dataframe: pd.DataFrame, stock_code: str) -> None:
     # clear current axis
@@ -230,9 +231,11 @@ def side_panel_plotting(count: count, dataframe: pd.DataFrame, stock_code: str, 
 def ax8_plotting():
     ax8.yaxis.label.set_color('white')
     ax8.ticklabel_format(axis='y',style='scientific')
+
+# -------------------------------------- Animation functions --------------------------------------
 # Animation function
 def animate_live(i):
-    # count 1 up in the counter
+    # Count 1 up in the counter
     count = next(counter)
     if(count == 0):
         exchange, stocks = run_scraping('InputTest', 60, 5, "nyse", [])
@@ -252,7 +255,7 @@ def animate_live(i):
         run_scraping('InputTest', 60, 5, info[0], info[1], False)
         df = preprocessing()
 
-        #split into each stock code
+        # Split into each stock code
         list_of_codes, list_of_dfs = split_dataframe_by_stockcode(df)
 
         
@@ -263,16 +266,16 @@ def animate_live(i):
             side_panel_plotting(count, resample(list_of_dfs[i]), list_of_codes[i], ax_list[i+1])
     
 
-# -------------- Main ---------------------
+# -------------------------------------- Main --------------------------------------
 if __name__ == '__main__':
-    #run_scraping('InputTest', 60, 5) #runs the scraper and therefore makes the csv file    
-
-    # ------------------------------------------------------------------------------------------------------------
     # Counter and x,y values for the graph
     counter = count() # Just counts up one number at a time
+
     info = [] # Store the exchange and the stock codes from the first scraping
+
     # ani function that draws to gcf (get current figure), uses the animate function for its animation and updates at an interval of 1000ms
     ani = FuncAnimation(fig, animate_live, interval = 1000)
     
+    # Defines padding between and around graphs
     plt.tight_layout(pad=10, w_pad=0.1, h_pad=0.1)
     plt.show()
