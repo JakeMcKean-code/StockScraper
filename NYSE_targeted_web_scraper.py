@@ -38,9 +38,8 @@ def soup_parser(exchange) -> BeautifulSoup:
         url: str = 'https://www.advfn.com/nyse/newyorkstockexchange.asp'
     elif (exchange == "AMEX"):
         url: str = 'https://www.advfn.com/amex/americanstockexchange.asp'
-    url = 'https://www.advfn.com/nyse/newyorkstockexchange.asp'
     page = requests.get(url)
-    page_text: str = page.text #line not needed at the moment
+    page_text: str = page.text 
     soup = BeautifulSoup(page_text, 'html.parser')
     return soup
 
@@ -114,8 +113,8 @@ def run_scraping(file_name: str, run_time: int, sleep_time: int, exchange: str, 
                     stocks[element] = stock.upper()
         print(f'Using stock codes: {stocks}.')
 
-        create_csv(file_name, exchange, stocks, run_time, sleep_time)
+        create_csv(file_name, exchange.upper(), stocks, run_time, sleep_time)
         return exchange, stocks
     else:
-        create_csv(file_name, exchange, stocks, run_time, sleep_time)
+        create_csv(file_name, exchange.upper(), stocks, run_time, sleep_time)
         return exchange, stocks
