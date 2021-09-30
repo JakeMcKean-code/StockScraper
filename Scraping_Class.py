@@ -10,8 +10,8 @@ class Scraper():
     def __init__(self) -> None:
         self.exchange_code: str
         self.stock_codes: list
-        self.run_time: float = 60.0
-        self.wait_time: float = 5.0
+        self.run_time: float = 10.0
+        self.wait_time: float = 0.5
 
         self.User_Input()
 
@@ -97,8 +97,8 @@ class Scraper():
 
         while current_time - start_time < self.run_time:
             page_info = self.access_page_info()#returns the page information
-            time_stamp = datetime.datetime.now() - datetime.timedelta(hours=5)#creates a time stamp for when the page was accessed and converts UK time to NY time
-            time_stamp = time_stamp.strftime('%Y-%m-%d %H:%M:%S')#format the time stamp
+            time_stamp = datetime.datetime.now().time()# - datetime.timedelta(hours=5)#creates a time stamp for when the page was accessed and converts UK time to NY time
+            time_stamp = time_stamp.strftime('%H:%M:%S')#format the time stamp
             for stock_code in self.stock_codes:
                 df = pd.DataFrame(columns=["Time", "Company name", "Company ticker", "Stock Price", "Change", "Percent Change", "Volume"])
                 information: list = [time_stamp]#information list created and time_stamp added into it
@@ -120,7 +120,7 @@ Created on Sat Sep  4 12:25:25 2021
 # Import scraing tool as a module
 
 #from NYSE_targeted_web_scraper import run_scraping
-from test import Scraper
+#from test import Scraper
 
 # Import libraries
 import numpy as np
@@ -133,7 +133,7 @@ import datetime
 from pandas.core.frame import DataFrame
 from matplotlib.gridspec import GridSpec
 import mplfinance as mpf
-
+from matplotlib.ticker import MaxNLocator
 
 mc = mpf.make_marketcolors(up='#18b800',down='#ff3503',
                             wick={'up':'#18b800','down':'#ff3503'},
@@ -143,7 +143,7 @@ s  = mpf.make_mpf_style(marketcolors=mc)
 # -------------------------------------- Create figure and subplots --------------------------------------
 def graph_design(ax):
     ax.set_facecolor('#091217')
-    ax.tick_params(axis="both", labelsize=8, colors='white')
+    ax.tick_params(axis="both", labelsize=6, colors='white')
     ax.ticklabel_format(useOffset=False)
     ax.spines['bottom'].set_color('#808080')
     ax.spines['top'].set_color('#808080')
@@ -189,7 +189,7 @@ def preprocessing(CSV_filename: str) -> pd.DataFrame:
     # Read in the dataframe and set the index and set the index to be a DatetimeIndex
     df = pd.read_csv(f'{CSV_filename}.csv', index_col = 'time', usecols = [0,2,3,4,5,6], names=['time','stock_code','price','change','percent change','volume'])
     remove_NAN(df) #remove any rows with NAN values that may exist
-    df.index = pd.to_datetime(df.index, format='%Y-%m-%d %H:%M:%S')
+    df.index = pd.to_datetime(df.index, format='%H:%M:%S')
     df.index = pd.DatetimeIndex(df.index)
     return df
 
@@ -201,14 +201,6 @@ def latest_values(df: pd.DataFrame) -> list:
     latest_change = float(latest_info.iloc[2])
     latest_percent_change = float(str(latest_info.iloc[3]).replace('%',''))
     return latest_price, latest_change, latest_percent_change
-
-
-# Function to convert a string to a float 
-def str_to_num(df: pd.DataFrame, column: str) -> pd.DataFrame:
-    if (isinstance(df.iloc[0,df.columns.get_loc(column)], str)):
-        df[column] = df[column].str.replace(',','')
-        df[column] = df[column].astype(float)
-    return df
 
 
 # Function to group and split the full dataframe by the stock tickers
@@ -235,8 +227,8 @@ def calculate_change_in_close(closes: list) -> list:
 
 def resample(df: pd.DataFrame) -> pd.DataFrame:
     # Resample data to get the ohlc candlestick format
-    data = df['price'].resample('20s').ohlc()
-    data['volume'] = df['volume'].resample('1Min').mean() #adds the mean of the resampled volume values to the resampled dataframe
+    data = df['price'].resample('10s').ohlc()
+    data['volume'] = df['volume'].resample('10s').mean() #adds the mean of the resampled volume values to the resampled dataframe
     remove_NAN(data)#removes NAN rows produced by rolling averages
     data['change'] = calculate_change_in_close(data['close']) #adds the mean of the resampled price change values to the resampled dataframe
     
@@ -310,9 +302,12 @@ def ax9_plotting(count: count, dataframe: pd.DataFrame, stock_code: str) -> None
         ax9.yaxis.set_label_position('left')
         ax9.yaxis.label.set_color('white')
         del df
-    ax9.text(0.005,-0.8, f'{stock_code}: Full history', transform=ax9.transAxes, color = 'black', fontsize = 13,
+    ax9.text(0.005,-0.8, f'{stock_code}: Recent history', transform=ax9.transAxes, color = 'black', fontsize = 13,
              fontweight = 'bold', horizontalalignment='left',verticalalignment='center',
              bbox=dict(facecolor='#FFBF00'))
+    
+    ax9.grid(True, color = 'grey', linestyle = '-', which = 'major', axis = 'both',
+             linewidth = 0.3)
 
 # Function to specify the plotting of the side panel plots
 def side_panel_plotting(count: count, dataframe: pd.DataFrame, stock_code: str, axis) -> None:
@@ -351,6 +346,9 @@ def ax8_plotting():
 # -------------------------------------- Animation functions --------------------------------------
 # Animation function
 def animate_live(i):
+    for axis in ax_list:
+        axis.xaxis.set_major_locator(MaxNLocator(3)) #produced Nbins and therefore Nbins+1 ticks
+
     # Count 1 up in the counter
     count = next(counter)
     file_name: str = '30-09-21'
@@ -367,13 +365,11 @@ def animate_live(i):
 # -------------------------------------- Main --------------------------------------
 if __name__ == '__main__':
     scraper = Scraper()
-    # Counter and x,y values for the graph
+    # Counter values for the graph
     counter = count() # Just counts up one number at a time
 
-    #info = [] # Store the exchange and the stock codes from the first scraping
-
     # ani function that draws to gcf (get current figure), uses the animate function for its animation and updates at an interval of 1000ms
-    ani = FuncAnimation(fig, animate_live, interval = 1000)
+    ani = FuncAnimation(fig, animate_live, interval = 500)
     
     # Defines padding between and around graphs
     plt.tight_layout(pad=10, w_pad=0.1, h_pad=0.1)
